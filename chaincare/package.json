@@ -10,7 +10,7 @@
     "ganache": "ganache --wallet.seed myCustomSeed"
   },
   "dependencies": {
-    "ganache": "^7.9.2",
+    "ethers": "^6.13.4",
     "next": "15.0.3",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106"
