@@ -38,3 +38,6 @@ chaincare/.vercel
 # typescript
 chaincare/*.tsbuildinfo
 chaincare/next-env.d.ts
+
+#Intellig
+../.idea
