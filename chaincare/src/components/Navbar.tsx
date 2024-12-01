@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import WalletConnect from "@/components/WalletConnect";
 
 const Navbar: React.FC = () => {
     return (
@@ -8,6 +9,7 @@ const Navbar: React.FC = () => {
                 <Link href="/" className="text-2xl font-bold">
                     Medical Records DApp
                 </Link>
+
                 <div className="space-x-4">
                     <Link href="/admin" className="hover:text-blue-200">Admin</Link>
                     <Link href="/patient" className="hover:text-blue-200">Patient</Link>
