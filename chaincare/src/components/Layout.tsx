@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
 import Navbar from './Navbar';
-import WalletConnect from './WalletConnect';
 
 interface LayoutProps {
     children: ReactNode;

@@ -11,7 +11,7 @@ interface AuthContextType {
     role: 'admin' | 'patient';
     isAuthenticated: boolean;
   };
-  loading: boolean;  // Add loading to the context type
+  loading: boolean;
   login: () => Promise<void>;
   logout: () => void;
 }
@@ -22,7 +22,7 @@ const AuthContext = createContext<AuthContextType>({
     role: 'patient',
     isAuthenticated: false,
   },
-  loading: false, // Default to false
+  loading: false,
   login: async () => {},
   logout: () => {},
 });
@@ -33,54 +33,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     role: 'patient' as 'admin' | 'patient',
     isAuthenticated: false,
   });
-  const [loading, setLoading] = useState(true); // Manage loading state
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
-  // Check authentication on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      setLoading(true); // Set loading to true
-      try {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-          try {
-            const decoded = parseJwt(token);
+useEffect(() => {
+  const checkAuth = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        const decoded = parseJwt(token);
 
-            // Validate token expiration
-            if (decoded.exp * 1000 > Date.now()) {
-              setUser({
+        if (decoded.exp * 1000 > Date.now()) {
+          // Only update user state if not already authenticated
+          setUser(prevUser => {
+            if (!prevUser.isAuthenticated) {
+              return {
                 address: decoded.address,
                 role: decoded.role,
                 isAuthenticated: true,
-              });
-
-              // Avoid infinite redirect loop by checking the current route
-              if (decoded.role === 'admin' && pathname !== '/admin') {
-                router.push('/admin');
-              } else if (decoded.role === 'patient' && pathname !== '/patient') {
-                router.push('/patient');
-              }
-            } else {
-              localStorage.removeItem('auth_token');
+              };
             }
-          } catch (error) {
-            console.error('Failed to parse token:', error);
-            localStorage.removeItem('auth_token');
+            return prevUser;
+          });
+
+          // Redirect logic
+          if (decoded.role === 'admin' && pathname !== '/admin') {
+            //router.push('/admin');
+          } else if (decoded.role === 'patient' && pathname !== '/patient') {
+            //router.push('/patient');
           }
+        } else {
+          localStorage.removeItem('auth_token');
         }
-      } finally {
-        setLoading(false); // Set loading to false when done
       }
-    };
-    checkAuth();
-  }, [pathname, router]);
+    } catch (error) {
+      console.error('Error during authentication check:', error);
+      localStorage.removeItem('auth_token');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  checkAuth();
+}, [pathname, router]);
 
   const login = async () => {
-    setLoading(true); // Set loading to true during login
+    setLoading(true);
     if (!window.ethereum) {
       alert('Please install MetaMask!');
-      setLoading(false); // Ensure loading stops if MetaMask isn't installed
+      setLoading(false);
       return;
     }
 
@@ -89,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (accounts.length > 0) {
         const connectedAccount = accounts[0];
         const provider = new Web3(window.ethereum);
-        const contract = new provider.eth.Contract(ABI, CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL);
+        const contract = new provider.eth.Contract(ABI.MEDICAL_ACCESS_CONTROL, CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL);
         const isAdmin = await contract.methods.isAdmin(connectedAccount).call();
         const role = isAdmin ? 'admin' : 'patient';
         const token = generateJWT(connectedAccount, role);
@@ -110,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error('Authentication failed:', error);
     } finally {
-      setLoading(false); // Ensure loading stops after login
+      setLoading(false);
     }
   };
 
@@ -131,18 +134,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// JWT Utilities
 function generateJWT(address: string, role: string): string {
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const payload = btoa(
     JSON.stringify({
       address,
       role,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24 hours
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
     })
   );
-  const signature = btoa(`${header}.${payload}`); // Simplified
-
+  const signature = btoa(`${header}.${payload}`);
   return `${header}.${payload}.${signature}`;
 }
 
@@ -156,7 +157,6 @@ function parseJwt(token: string): any {
   }
 }
 
-// Custom hook to use auth context
 export const useAuth = () => {
   return useContext(AuthContext);
 };

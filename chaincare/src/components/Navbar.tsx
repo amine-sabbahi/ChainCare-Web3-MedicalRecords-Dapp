@@ -1,8 +1,15 @@
+"use client";
 import React from 'react';
 import Link from 'next/link';
-import WalletConnect from "@/components/WalletConnect";
+import {useAuth} from "@/context/AuthContext";
+
 
 const Navbar: React.FC = () => {
+  const { user, login, logout, loading } = useAuth();
+  const handleDisconnect = () => {
+    logout();
+  };
+
     return (
         <nav className="bg-blue-600 text-white p-4">
             <div className="container mx-auto flex justify-between items-center">
@@ -11,9 +18,12 @@ const Navbar: React.FC = () => {
                 </Link>
 
                 <div className="space-x-4">
-                    <Link href="/admin" className="hover:text-blue-200">Admin</Link>
-                    <Link href="/patient" className="hover:text-blue-200">Patient</Link>
-                    <Link href="/doctor" className="hover:text-blue-200">Doctor</Link>
+                    <button
+                        onClick={handleDisconnect}
+                        className="px-4 py-2 bg-red-500 text-white rounded"
+                    >
+                        Disconnect
+                    </button>
                 </div>
             </div>
         </nav>
