@@ -17,7 +17,7 @@ export default function Home() {
 
       <SideBarAdmin>
           <button onClick={handleDisconnect}>Logout</button>
-      </SideBarAdmin>
+      </SideBarAdmin>c
 
   );
 }
