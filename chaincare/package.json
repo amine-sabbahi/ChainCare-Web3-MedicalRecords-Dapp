@@ -17,11 +17,13 @@
     "ethers": "^6.13.4",
     "ganache": "^6.4.5",
     "ganache-cli": "^6.12.2",
+    "hardhat": "^0.0.7",
     "lucide-react": "^0.465.0",
     "next": "15.0.3",
     "nextui-cli": "^0.4.0",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
+    "recharts": "^2.14.1",
     "web3": "^4.14.0",
     "web3modal": "^1.9.12"
   },

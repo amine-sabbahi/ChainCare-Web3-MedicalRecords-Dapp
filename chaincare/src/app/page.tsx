@@ -25,7 +25,7 @@ export default function Home() {
               onClick={login}
               disabled={loading}
             >
-              Login
+              Connect
             </button>
           ) : (
             <button
