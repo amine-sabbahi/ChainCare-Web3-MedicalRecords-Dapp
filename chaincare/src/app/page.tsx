@@ -1,3 +1,4 @@
+"use client";
 import Layout from "@/components/Layout";
 import { useAuth } from "@/context/AuthContext";
 import CenteredLoader from "@/components/Loading";
