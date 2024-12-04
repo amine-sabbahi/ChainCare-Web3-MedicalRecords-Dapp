@@ -45,6 +45,7 @@ const SideBarAdmin = ({children}) => {
           <nav className="flex-grow mt-4 space-y-1">
             {[
               {icon: <Home className="w-5 h-5"/>, label: 'Patients', href: '/admin/patients'},
+              {icon: <Home className="w-5 h-5"/>, label: 'Doctors', href: '/admin/doctors'},
             ]
                 .filter((item) => !removedItems.includes(item.href)) // Exclude removed items
                 .map((item, index) => (
