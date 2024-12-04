@@ -37,47 +37,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const router = useRouter();
   const pathname = usePathname();
 
-useEffect(() => {
-  const checkAuth = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        const decoded = parseJwt(token);
+  useEffect(() => {
+    const checkAuth = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          const decoded = parseJwt(token);
 
-        if (decoded.exp * 1000 > Date.now()) {
-          // Only update user state if not already authenticated
-          setUser(prevUser => {
-            if (!prevUser.isAuthenticated) {
-              return {
-                address: decoded.address,
-                role: decoded.role,
-                isAuthenticated: true,
-              };
+          if (decoded.exp * 1000 > Date.now()) {
+            setUser({
+              address: decoded.address,
+              role: decoded.role,
+              isAuthenticated: true,
+            });
+
+            // Only redirect if on an incompatible route
+            if (
+              (decoded.role === 'admin' && !pathname.startsWith('/admin')) ||
+              (decoded.role === 'patient' && !pathname.startsWith('/patient'))
+            ) {
+              router.push(decoded.role === 'admin' ? '/admin' : '/patient');
             }
-            return prevUser;
-          });
-
-          // Redirect logic
-          if (decoded.role === 'admin' && pathname !== '/admin') {
-            //router.push('/admin');
-          } else if (decoded.role === 'patient' && pathname !== '/patient') {
-            //router.push('/patient');
+          } else {
+            localStorage.removeItem('auth_token');
           }
-        } else {
-          localStorage.removeItem('auth_token');
         }
+      } catch (error) {
+        console.error('Error during authentication check:', error);
+        localStorage.removeItem('auth_token');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error during authentication check:', error);
-      localStorage.removeItem('auth_token');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  checkAuth();
-}, [pathname, router]);
+    checkAuth();
+  }, [pathname, router]);
 
   const login = async () => {
     setLoading(true);
