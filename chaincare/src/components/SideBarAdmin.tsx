@@ -44,8 +44,8 @@ const SideBarAdmin = ({children}) => {
           {/* Navigation Items */}
           <nav className="flex-grow mt-4 space-y-1">
             {[
-              {icon: <Home className="w-5 h-5"/>, label: 'Patients', href: '/admin/patients'},
-              {icon: <Home className="w-5 h-5"/>, label: 'Doctors', href: '/admin/doctors'},
+              {icon: <Home className="w-5 h-5"/>, label: 'Patients', href: '/admin/createPatient'},
+              {icon: <Home className="w-5 h-5"/>, label: 'Doctors', href: '/admin/createDoctor'},
             ]
                 .filter((item) => !removedItems.includes(item.href)) // Exclude removed items
                 .map((item, index) => (
@@ -53,7 +53,7 @@ const SideBarAdmin = ({children}) => {
                       <a
                           href={item.href}
                           className={`flex items-center px-4 py-3 transition-colors ${
-                              isActive(['/admin/patients', '/admin/createPatient'])
+                              isActive(['/admin/createDoctor', '/admin/createPatient'])
                                   ? 'bg-blue-600 text-white'
                                   : 'hover:bg-gray-800 text-gray-300'
                           }`}
