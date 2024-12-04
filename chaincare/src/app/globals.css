@@ -6,10 +6,10 @@
   --background: #ffffff; /* Light mode background */
   --foreground: #171717; /* Light mode text color */
 }
-
+/* This block applies when the user prefers dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a; /* Dark mode background */
+    /*--background: #0a0a0a; /* Dark mode background */
     --foreground: #ededed; /* Dark mode text color */
   }
 }
