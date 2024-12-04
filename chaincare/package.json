@@ -10,6 +10,10 @@
     "ganache": "ganache --wallet.seed myCustomSeed"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.5",
+    "@emotion/styled": "^11.13.5",
+    "@mui/icons-material": "^5.16.9",
+    "@mui/material": "^5.16.9",
     "ethers": "^5.7.2",
     "ganache": "^7.9.2",
     "ganache-cli": "^6.12.2",
