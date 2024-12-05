@@ -17,7 +17,7 @@ const SideBarAdmin = ({children}) => {
 
   // Navigation items with icons and labels
   const navigationItems = [
-    {icon: <LayoutDashboard className="w-5 h-5"/>, label: 'Admin Dashboard', href: '/admin/page'},
+    {icon: <LayoutDashboard className="w-5 h-5"/>, label: 'Admin Dashboard', href: '/admin'},
     {icon: <Users className="w-5 h-5"/>, label: 'Patients', href: '/admin/createPatient'},
     {icon: <Stethoscope className="w-5 h-5"/>, label: 'Doctors', href: '/admin/createDoctor'},
   ];
