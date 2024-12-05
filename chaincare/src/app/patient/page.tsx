@@ -3,13 +3,15 @@
 // src/app/dashboard/page.tsx
 import '../globals.css';
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 import { Button, Container, Grid, Card, Typography, Box ,} from '@mui/material';
-import { Person, Email, Phone, Wc, Cake } from '@mui/icons-material';
+import { Person, Email, Phone, Wc, Cake ,ExitToApp } from '@mui/icons-material';
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 import Web3 from 'web3';
 
 
 export default function Dashboard() {
+  const { logout } = useAuth();
   const [patientInfo, setPatientInfo] = useState({
     patientAddress: '',
     name: '',
@@ -82,12 +84,14 @@ export default function Dashboard() {
       alert("Failed to update profile.");
     }
   };
-  
+ 
 
   // Fetch patient info on component mount
   useEffect(() => {
     fetchPatientInfo();
   }, []);
+
+
 
   // Log the updated patient info when it changes
   useEffect(() => {
@@ -108,6 +112,17 @@ export default function Dashboard() {
         >
           Patient Dashboard
         </Typography>
+        <Button
+          variant="outlined"
+          sx={{
+            position: 'absolute',
+            top: 16,
+            right: 16,
+          }}
+          onClick={logout}  // Logout action
+        >
+          <ExitToApp sx={{ mr: 1 }} /> Logout
+        </Button>
       </header>
 
       <Container maxWidth="lg" sx={{ mt: 6 }}>
@@ -345,14 +360,14 @@ export default function Dashboard() {
                 <Typography variant="body2" color="textSecondary">
                   Grant or revoke access to your records.
                 </Typography>
-                <Button
+                        <Button
                   variant="contained"
                   sx={{
                     mt: 2,
                     backgroundColor: '#f5b6c4',
                     ':hover': { backgroundColor: '#e298a5' },
                   }}
-                  href="/dashboard/permissions"
+                  href="/patient/ManagePermissions"
                 >
                   Manage
                 </Button>
