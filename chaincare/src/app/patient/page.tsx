@@ -142,7 +142,7 @@ export default function Dashboard() {
                     backgroundColor: '#a8d5e2',
                     ':hover': { backgroundColor: '#86c5d8' },
                   }}
-                  href="/dashboard/records"
+                  href="/patient/records"
                 >
                   View
                 </Button>
