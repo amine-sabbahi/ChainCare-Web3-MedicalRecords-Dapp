@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Home, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, LogOut, ChevronLeft, ChevronRight, Users, Stethoscope, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 const SideBarAdmin = ({children}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [removedItems, setRemovedItems] = useState([]);
-  const pathname = usePathname(); // Get the current path
+  const pathname = usePathname();
   const { logout } = useAuth();
 
   const toggleSidebar = () => setIsCollapsed(!isCollapsed);
@@ -14,90 +15,174 @@ const SideBarAdmin = ({children}) => {
   // Function to check if the path is active
   const isActive = (paths) => paths.includes(pathname);
 
+  // Navigation items with icons and labels
+  const navigationItems = [
+    {icon: <LayoutDashboard className="w-5 h-5"/>, label: 'Admin Dashboard', href: '/admin/page'},
+    {icon: <Users className="w-5 h-5"/>, label: 'Patients', href: '/admin/createPatient'},
+    {icon: <Stethoscope className="w-5 h-5"/>, label: 'Doctors', href: '/admin/createDoctor'},
+  ];
+
   return (
-      <div className="flex flex-row h-screen">
-        {/* Sidebar */}
-        <div
-            className={`fixed left-0 top-0 h-full bg-gray-800 text-white shadow-xl transition-all duration-300 ${
-                isCollapsed ? 'w-16' : 'w-64'
-            } flex flex-col z-50`}
+    <div className="flex flex-row h-screen">
+      {/* Sidebar */}
+      <div
+        className={`
+          fixed left-0 top-0 h-full 
+          bg-gradient-to-b from-[#2c3e50] to-[#34495e] 
+          text-white shadow-2xl 
+          transition-all duration-300 
+          ${isCollapsed ? 'w-16' : 'w-64'}
+          flex flex-col 
+          z-50 
+          border-r border-gray-700
+        `}
+      >
+        {/* Collapse/Expand Button */}
+        <button
+          onClick={toggleSidebar}
+          className="
+            absolute top-4 right-[-20px] 
+            bg-[#34495e] 
+            text-white 
+            p-2 
+            rounded-r-full 
+            shadow-lg 
+            hover:bg-[#2c3e50] 
+            transition-colors 
+            group
+          "
         >
-          {/* Collapse/Expand Button */}
-          <button
-              onClick={toggleSidebar}
-              className="absolute top-4 right-[-20px] bg-gray-800 p-2 rounded-full shadow-md border border-gray-700 hover:bg-gray-700 transition-colors"
+          {isCollapsed ? (
+            <ChevronRight className="w-5 h-5 group-hover:animate-pulse"/>
+          ) : (
+            <ChevronLeft className="w-5 h-5 group-hover:animate-pulse"/>
+          )}
+        </button>
+
+        {/* Logo Area */}
+        <div className="p-4 border-b border-gray-700 flex items-center justify-center">
+          <div 
+            className={`
+              transition-all 
+              ${isCollapsed ? 'w-10 h-10 overflow-hidden' : 'w-full'}
+              flex justify-center items-center
+            `}
           >
-            {isCollapsed ? <ChevronRight className="w-5 h-5"/> : <ChevronLeft className="w-5 h-5"/>}
-          </button>
-
-          {/* Logo Area */}
-          <div className="p-4 border-b border-gray-700 flex items-center justify-center">
-            <h1
-                className={`font-bold text-xl transition-all ${
-                    isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-full'
-                } overflow-hidden`}
-            >
-              Dashboard
-            </h1>
+            <Image 
+              src="/public/img/Chaincare_verticale-logo.png" 
+              alt="ChainCare Logo" 
+              width={isCollapsed ? 40 : 220} 
+              height={isCollapsed ? 40 : 100} 
+              className="object-contain"
+              priority
+            />
           </div>
+        </div>
 
-          {/* Navigation Items */}
-          <nav className="flex-grow mt-4 space-y-1">
-            {[
-              {icon: <Home className="w-5 h-5"/>, label: 'Patients', href: '/admin/patients'},
-              {icon: <Home className="w-5 h-5"/>, label: 'Doctors', href: '/admin/doctors'},
-            ]
-                .filter((item) => !removedItems.includes(item.href)) // Exclude removed items
-                .map((item, index) => (
-                    <div key={index} className="relative group">
-                      <a
-                          href={item.href}
-                          className={`flex items-center px-4 py-3 transition-colors ${
-                              isActive(['/admin/patients', '/admin/createPatient'])
-                                  ? 'bg-blue-600 text-white'
-                                  : 'hover:bg-gray-800 text-gray-300'
-                          }`}
-                      >
-                        {item.icon}
-                        <span
-                            className={`ml-3 transition-all ${
-                                isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-full'
-                            } overflow-hidden whitespace-nowrap`}
-                        >
+        {/* Navigation Items */}
+        <nav className="flex-grow mt-4 space-y-1">
+          {navigationItems
+            .filter((item) => !removedItems.includes(item.href))
+            .map((item, index) => (
+              <div key={index} className="relative group">
+                <a
+                  href={item.href}
+                  className={`
+                    flex items-center 
+                    px-4 py-3 
+                    transition-all 
+                    duration-300 
+                    ease-in-out 
+                    ${
+                      isActive([item.href])
+                        ? 'bg-[#3498db] text-white scale-105'
+                        : 'hover:bg-[#34495e] text-gray-300 hover:scale-105'
+                    }
+                    transform 
+                    hover:shadow-lg 
+                    rounded-r-xl 
+                    mx-2 
+                    group
+                  `}
+                >
+                  <span className={`
+                    ${isActive([item.href]) ? 'text-white' : 'text-gray-400'}
+                    group-hover:text-white
+                    transition-colors
+                  `}>
+                    {item.icon}
+                  </span>
+                  <span
+                    className={`
+                      ml-3 
+                      transition-all 
+                      ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-full'}
+                      overflow-hidden 
+                      whitespace-nowrap 
+                      text-sm 
+                      font-medium
+                    `}
+                  >
                     {item.label}
                   </span>
-                      </a>
-                    </div>
-                ))}
-          </nav>
+                </a>
+              </div>
+            ))}
+        </nav>
 
-          {/* Bottom Navigation */}
-          <div className="border-t border-gray-700 p-2 space-y-1">
-            <button
-                onClick={logout}
-                className="flex items-center px-4 py-3 hover:bg-gray-800 text-gray-300 transition-colors w-full"
+        {/* Bottom Navigation */}
+        <div className="border-t border-gray-700 p-2">
+          <button
+            onClick={logout}
+            className="
+              flex items-center 
+              px-4 py-3 
+              hover:bg-red-600 
+              text-gray-300 
+              transition-all 
+              duration-300 
+              w-full 
+              rounded-xl 
+              group
+            "
+          >
+            <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform"/>
+            <span
+              className={`
+                ml-3 
+                transition-all 
+                ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-full'}
+                overflow-hidden 
+                whitespace-nowrap 
+                text-m
+                font-medium 
+                group-hover:text-white
+              `}
             >
-              <LogOut className="w-5 h-5"/>
-              <span
-                  className={`ml-3 transition-all ${
-                      isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-full'
-                  } overflow-hidden whitespace-nowrap`}
-              >
-              Logout
+              Disconnect
             </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <div
-            className={`flex-auto w-screen h-screen left-0 top-0 p-8 bg-gray-100 transition-all duration-300 ${
-                isCollapsed ? 'ml-16' : 'ml-64'
-            }`}
-        >
-          {children}
+          </button>
         </div>
       </div>
+
+      {/* Main Content */}
+      <div
+        className={`
+          flex-auto 
+          w-screen 
+          h-screen 
+          left-0 
+          top-0 
+          p-8 
+          bg-gray-100 
+          transition-all 
+          duration-300 
+          ${isCollapsed ? 'ml-16' : 'ml-64'}
+        `}
+      >
+        {children}
+      </div>
+    </div>
   );
 };
 

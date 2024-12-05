@@ -1,189 +1,238 @@
+// createDoctor/page.tsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Layout from "@/components/Layout";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from 'next/navigation';
 import Web3 from "web3";
-import { useAuth } from "@/context/AuthContext";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 import SideBarAdmin from "@/components/SideBarAdmin";
 
-export default function CreateDoctorPage() {
+export default function Doctors() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, login, logout, loading } = useAuth();
 
-  // Form state to manage input values for the doctor
-  const [doctorInfo, setDoctorInfo] = useState({
-    doctorAddress: '',
+  // State to store doctors' data and modal visibility
+  const [doctors, setDoctors] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newDoctor, setNewDoctor] = useState({
+    address: '',  // Fix the key name to "address"
     name: '',
     specialization: '',
     email: '',
     phoneNumber: '',
-    qualifications: ['']
+    qualifications: '',
   });
 
-  // Handle form changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "qualifications") {
-      setDoctorInfo({
-        ...doctorInfo,
-        [name]: value.split(',') // Convert the comma-separated qualifications into an array
-      });
-    } else {
-      setDoctorInfo({
-        ...doctorInfo,
-        [name]: value
-      });
-    }
+  // Fetch the list of doctors
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      if (!window.ethereum) {
+        alert("Ethereum provider is not available. Please install MetaMask.");
+        return;
+      }
+
+      const provider = new Web3(window.ethereum);
+      const contract = new provider.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
+
+      try {
+        const doctorAddresses = await contract.methods.getAllRegisteredDoctors().call();
+        const doctorsData = await Promise.all(doctorAddresses.map(async (address) => {
+          const doctorProfile = await contract.methods.getDoctorProfile(address).call();
+          return {
+            address,
+            ...doctorProfile
+          };
+        }));
+        setDoctors(doctorsData);
+      } catch (error) {
+        console.error("Error fetching doctors:", error);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
+
+  // Handle disconnect
+  const handleDisconnect = () => {
+    logout();
   };
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Handle input changes for new doctor
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewDoctor({
+      ...newDoctor,
+      [name]: value
+    });
+  };
 
+  // Handle submit to add a new doctor
+  const handleAddDoctor = async () => {
     if (!window.ethereum) {
       alert("Ethereum provider is not available. Please install MetaMask.");
+      return;
+    }
+
+    // Validate Ethereum address
+    if (!Web3.utils.isAddress(newDoctor.address)) {
+      alert("Invalid Ethereum address.");
       return;
     }
 
     const provider = new Web3(window.ethereum);
     const contract = new provider.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
 
-    // Make sure the user is connected to the wallet
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    const userAddress = accounts[0];
-
-    // Prepare the parameters for the transaction
-    const { doctorAddress, name, specialization, email, phoneNumber, qualifications } = doctorInfo;
-
-    // Ensure doctorAddress is not empty or invalid
-    if (!Web3.utils.isAddress(doctorAddress)) {
-      alert("Invalid doctor address.");
-      return;
-    }
-
     try {
-      // Send the transaction with the estimated gas
-      const tx = await contract.methods.registerDoctor(
-        doctorAddress,
-        name,
-        specialization,
-        email,
-        phoneNumber,
-        qualifications
-      ).send({ from: userAddress });
+      const accounts = await provider.eth.getAccounts();
+      await contract.methods.registerDoctor(
+        newDoctor.address,  // Ensure the address is valid
+        newDoctor.name,
+        newDoctor.specialization,
+        newDoctor.email,
+        newDoctor.phoneNumber,
+        newDoctor.qualifications.split(',')
+      ).send({ from: accounts[0] });
 
-      // Handle successful registration
-      alert("Doctor successfully registered!");
+      // Close modal after adding doctor
+      setIsModalOpen(false);
 
-      // Optionally, redirect or reset the form
-      router.push("/doctor-dashboard");
-      setDoctorInfo({
-        doctorAddress: '',
-        name: '',
-        specialization: '',
-        email: '',
-        phoneNumber: '',
-        qualifications: ['']
-      });
-
+      // Re-fetch doctors list
+      const doctorAddresses = await contract.methods.getAllRegisteredDoctors().call();
+      const doctorsData = await Promise.all(doctorAddresses.map(async (address) => {
+        const doctorProfile = await contract.methods.getDoctorProfile(address).call();
+        return {
+          address,
+          ...doctorProfile
+        };
+      }));
+      setDoctors(doctorsData);
     } catch (error) {
-      console.error("Error registering doctor:", error);
-      alert("There was an error during registration. Please try again.");
+      console.error("Error adding doctor:", error);
     }
   };
 
   return (
     <SideBarAdmin>
-      <h1 className="text-3xl font-bold text-left text-black my-6 mt-1">Doctor Registration</h1>
+      <h1 className="text-3xl font-bold text-left text-black my-6">Doctors Registry</h1>
 
-      {/* Registration form */}
-      <form onSubmit={handleSubmit} className="max-w-lg p-6 border max-w-full h-max border-gray-300 rounded-lg shadow-lg bg-white">
-        <div className="mb-4">
-          <label htmlFor="doctorAddress" className="block text-sm font-medium text-gray-700">Doctor Address</label>
-          <input
-            type="text"
-            id="doctorAddress"
-            name="doctorAddress"
-            value={doctorInfo.doctorAddress}
-            onChange={handleChange}
-            className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
+      {/* Add Doctor Button */}
+      <button 
+        onClick={() => setIsModalOpen(true)} 
+        className="mb-6 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-300"
+      >
+        Add Doctor
+      </button>
+
+      {/* Doctors Table */}
+      <div className="overflow-x-auto shadow-md sm:rounded-lg">
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" className="px-6 py-3">Doctor Name</th>
+              <th scope="col" className="px-6 py-3">Specialization</th>
+              <th scope="col" className="px-6 py-3">Email</th>
+              <th scope="col" className="px-6 py-3">Phone Number</th>
+              <th scope="col" className="px-6 py-3">Qualifications</th>
+              <th scope="col" className="px-6 py-3">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {doctors.map((doctor, index) => (
+              <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                <td className="px-6 py-4">{doctor.name}</td>
+                <td className="px-6 py-4">{doctor.specialization}</td>
+                <td className="px-6 py-4">{doctor.email}</td>
+                <td className="px-6 py-4">{doctor.phoneNumber}</td>
+                <td className="px-6 py-4">{doctor.qualifications.join(", ")}</td>
+                <td className="px-6 py-4">
+                  {doctor.isActive ? (
+                    <span className="text-green-500 font-semibold">Active</span>
+                  ) : (
+                    <span className="text-red-500 font-semibold">Inactive</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal for Adding Doctor */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Add New Doctor</h2>
+            <form className="space-y-4">
+            <input
+                type="text"
+                name="address"
+                placeholder="Doctor Address"
+                value={newDoctor.address || ''} 
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+              <input
+                type="text"
+                name="name"
+                placeholder="Doctor Name"
+                value={newDoctor.name}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+              <input
+                type="text"
+                name="specialization"
+                placeholder="Specialization"
+                value={newDoctor.specialization}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={newDoctor.email}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+              <input
+                type="text"
+                name="phoneNumber"
+                placeholder="Phone Number"
+                value={newDoctor.phoneNumber}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+              <input
+                type="text"
+                name="qualifications"
+                placeholder="Qualifications (comma separated)"
+                value={newDoctor.qualifications}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddDoctor}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Add Doctor
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={doctorInfo.name}
-            onChange={handleChange}
-            className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="specialization" className="block text-sm font-medium text-gray-700">Specialization</label>
-          <input
-            type="text"
-            id="specialization"
-            name="specialization"
-            value={doctorInfo.specialization}
-            onChange={handleChange}
-            className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={doctorInfo.email}
-            onChange={handleChange}
-            className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Phone Number</label>
-          <input
-            type="text"
-            id="phoneNumber"
-            name="phoneNumber"
-            value={doctorInfo.phoneNumber}
-            onChange={handleChange}
-            className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        <div className="mb-4">
-          <label htmlFor="qualifications" className="block text-sm font-medium text-gray-700">Qualifications (comma separated)</label>
-          <input
-            type="text"
-            id="qualifications"
-            name="qualifications"
-            value={doctorInfo.qualifications.join(', ')} // Display as a comma-separated string
-            onChange={handleChange}
-            className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="p-3 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Register Doctor
-        </button>
-      </form>
+      )}
     </SideBarAdmin>
   );
 }

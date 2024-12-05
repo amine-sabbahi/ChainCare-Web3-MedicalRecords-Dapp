@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Web3 from "web3";
 import { useAuth } from "@/context/AuthContext";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 import SideBarAdmin from "@/components/SideBarAdmin";
 
-export default function CreatePatientPage() {
+export default function PatientRegistryPage() {
   const router = useRouter();
   const { user, logout } = useAuth();
 
-  // Form state to manage input values
-  const [patientInfo, setPatientInfo] = useState({
+  // State to store patients' data and modal visibility
+  const [patients, setPatients] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newPatient, setNewPatient] = useState({
     patientAddress: '',
     name: '',
     age: '',
@@ -21,167 +23,221 @@ export default function CreatePatientPage() {
     phoneNumber: ''
   });
 
-  // Handle form changes
-  const handleChange = (e) => {
+  // Fetch the list of patients
+  useEffect(() => {
+    const fetchPatients = async () => {
+      if (!window.ethereum) {
+        alert("Ethereum provider is not available. Please install MetaMask.");
+        return;
+      }
+
+      const provider = new Web3(window.ethereum);
+      const contract = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
+
+      try {
+        const patientAddresses = await contract.methods.getAllRegisteredPatients().call();
+        const patientsData = await Promise.all(patientAddresses.map(async (address) => {
+          const patientProfile = await contract.methods.getPatientProfile(address).call();
+          return {
+            address,
+            ...patientProfile
+          };
+        }));
+        setPatients(patientsData);
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+      }
+    };
+
+    fetchPatients();
+  }, []);
+
+  // Handle input changes for new patient
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setPatientInfo({
-      ...patientInfo,
+    setNewPatient({
+      ...newPatient,
       [name]: value
     });
   };
 
-  // Handle form submission
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  // Handle submit to add a new patient
+  const handleAddPatient = async () => {
+    if (!window.ethereum) {
+      alert("Ethereum provider is not available. Please install MetaMask.");
+      return;
+    }
 
-  if (!window.ethereum) {
-    alert("Ethereum provider is not available. Please install MetaMask.");
-    return;
-  }
+    // Validate Ethereum address
+    if (!Web3.utils.isAddress(newPatient.patientAddress)) {
+      alert("Invalid patient address.");
+      return;
+    }
 
-  const provider = new Web3(window.ethereum);
-  const contract = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
+    const provider = new Web3(window.ethereum);
+    const contract = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
 
-  // Make sure the user is connected to the wallet
-  const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-  const userAddress = accounts[0];
+    try {
+      const accounts = await provider.eth.getAccounts();
+      await contract.methods.registerPatient(
+        newPatient.patientAddress,
+        newPatient.name,
+        newPatient.age,
+        newPatient.gender,
+        newPatient.email,
+        newPatient.phoneNumber
+      ).send({ from: accounts[0] });
 
-  // Prepare the parameters for the transaction
-  const { patientAddress, name, age, gender, email, phoneNumber } = patientInfo;
+      // Close modal after adding patient
+      setIsModalOpen(false);
 
-  // Ensure patientAddress is not empty or invalid
-  if (!Web3.utils.isAddress(patientAddress)) {
-    alert("Invalid patient address.");
-    return;
-  }
+      // Re-fetch patients list
+      const patientAddresses = await contract.methods.getAllRegisteredPatients().call();
+      const patientsData = await Promise.all(patientAddresses.map(async (address) => {
+        const patientProfile = await contract.methods.getPatientProfile(address).call();
+        return {
+          address,
+          ...patientProfile
+        };
+      }));
+      setPatients(patientsData);
 
-  try {
-    // Send the transaction with the estimated gas
-    const tx = await contract.methods.registerPatient(
-      patientAddress,
-      name,
-      age,
-      gender,
-      email,
-      phoneNumber
-    ).send({ from: userAddress , gas: "17989"});
-
-    // Handle successful registration
-    alert("Patient successfully registered!");
-
-    // Optionally, redirect or reset the form
-    router.push("/patient-dashboard");
-    setPatientInfo({
-      patientAddress: '',
-      name: '',
-      age: '',
-      gender: '',
-      email: '',
-      phoneNumber: ''
-    });
-
-  } catch (error) {
-    console.error("Error registering patient:", error);
-    alert("There was an error during registration. Please try again.");
-  }
-};
-
+      // Reset form
+      setNewPatient({
+        patientAddress: '',
+        name: '',
+        age: '',
+        gender: '',
+        email: '',
+        phoneNumber: ''
+      });
+    } catch (error) {
+      console.error("Error adding patient:", error);
+      alert("Failed to add patient. Please try again.");
+    }
+  };
 
   return (
+    <SideBarAdmin>
+      <h1 className="text-3xl font-bold text-left text-black my-6">Patients Registry</h1>
 
-      <SideBarAdmin>
-        <h1 className="text-3xl font-bold text-left text-black my-6 mt-1">Patient Registration</h1>
+      {/* Add Patient Button */}
+      <button 
+        onClick={() => setIsModalOpen(true)} 
+        className="mb-6 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-300"
+      >
+        Add Patient
+      </button>
 
-        {/* Registration form */}
-        <form onSubmit={handleSubmit} className="max-w-lg p-6 border max-w-full h-max border-gray-300 rounded-lg shadow-lg bg-white">
-          <div className="mb-4">
-            <label htmlFor="patientAddress" className="block text-sm font-medium text-gray-700">Patient Address</label>
-            <input
+      {/* Patients Table */}
+      <div className="overflow-x-auto shadow-md sm:rounded-lg">
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" className="px-6 py-3">Patient Name</th>
+              <th scope="col" className="px-6 py-3">Age</th>
+              <th scope="col" className="px-6 py-3">Gender</th>
+              <th scope="col" className="px-6 py-3">Email</th>
+              <th scope="col" className="px-6 py-3">Phone Number</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((patient, index) => (
+              <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                <td className="px-6 py-4">{patient.name}</td>
+                <td className="px-6 py-4">{patient.age}</td>
+                <td className="px-6 py-4">{patient.gender}</td>
+                <td className="px-6 py-4">{patient.email}</td>
+                <td className="px-6 py-4">{patient.phoneNumber}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Modal for Adding Patient */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Add New Patient</h2>
+            <form className="space-y-4">
+              <input
                 type="text"
-                id="patientAddress"
                 name="patientAddress"
-                value={patientInfo.patientAddress}
-                onChange={handleChange}
-                className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Patient Ethereum Address"
+                value={newPatient.patientAddress}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
                 required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-            <input
+              />
+              <input
                 type="text"
-                id="name"
                 name="name"
-                value={patientInfo.name}
-                onChange={handleChange}
-                className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Patient Name"
+                value={newPatient.name}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
                 required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="age" className="block text-sm font-medium text-gray-700">Age</label>
-            <input
+              />
+              <input
                 type="number"
-                id="age"
                 name="age"
-                value={patientInfo.age}
-                onChange={handleChange}
-                className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Age"
+                value={newPatient.age}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
                 required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender</label>
-            <select
-                id="gender"
+              />
+              <select
                 name="gender"
-                value={patientInfo.gender}
-                onChange={handleChange}
-                className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={newPatient.gender}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
                 required
-            >
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-            <input
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+              <input
                 type="email"
-                id="email"
                 name="email"
-                value={patientInfo.email}
-                onChange={handleChange}
-                className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Email"
+                value={newPatient.email}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
                 required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Phone Number</label>
-            <input
+              />
+              <input
                 type="text"
-                id="phoneNumber"
                 name="phoneNumber"
-                value={patientInfo.phoneNumber}
-                onChange={handleChange}
-                className="mt-2 p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Phone Number"
+                value={newPatient.phoneNumber}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
                 required
-            />
+              />
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddPatient}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Add Patient
+                </button>
+              </div>
+            </form>
           </div>
-
-          <button type="submit"
-                  className="p-3 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            Register Patient
-          </button>
-        </form>
-      </SideBarAdmin>
-
+        </div>
+      )}
+    </SideBarAdmin>
   );
 }
