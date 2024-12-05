@@ -1,5 +1,7 @@
 "use client";
-
+import Layout from "@/components/Layout";
+import { useAuth } from "@/context/AuthContext";
+import CenteredLoader from "@/components/Loading";
 import { Container } from "@/components/Container";
 import { Hero } from "@/components/Hero";
 import { SectionTitle } from "@/components/SectionTitle";
@@ -7,20 +9,16 @@ import { Benefits } from "@/components/Benefits";
 import { Testimonials } from "@/components/Testimonials";
 import { Faq } from "@/components/Faq";
 import { Cta } from "@/components/Cta";
-import { Navbar } from "@/components/Navbar";
-import { TeamSection } from "@/components/Team"
 
 import { benefitOne, benefitTwo } from "@/components/data";
-import { Footer } from "@/components/Footer";
 
 export default function Home() {
   return (
     <Container>
-      <Navbar />
       <Hero />
       <SectionTitle
-        preTitle="ChainCare Benefits"
-        title=" Why should you use this Dapp"
+        preTitle="Nextly Benefits"
+        title=" Why should you use this landing page"
       >
         Nextly is a free landing page & marketing website template for startups
         and indie projects. Its built with Next.js & TailwindCSS. And its
@@ -55,9 +53,7 @@ export default function Home() {
       </SectionTitle>
 
       <Faq />
-      <TeamSection />
       <Cta />
-      <Footer />
     </Container>
   );
 }
