@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Home, LogOut, ChevronLeft, ChevronRight, Users, Stethoscope, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image/';
+import ChaincareLogo from "../../public/img/Chaincare_verticale-logo.png"
 
 const SideBarAdmin = ({children}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -16,9 +18,9 @@ const SideBarAdmin = ({children}) => {
 
   // Navigation items with icons and labels
   const navigationItems = [
-    {icon: <LayoutDashboard className="w-5 h-5"/>, label: 'Admin Panel', href: '/admin'},
-    {icon: <Users className="w-5 h-5"/>, label: 'Patients Panel', href: '/admin/createPatient'},
-    {icon: <Stethoscope className="w-5 h-5"/>, label: 'Doctors Panel', href: '/admin/createDoctor'},
+    {icon: <LayoutDashboard className="w-5 h-5"/>, label: 'Admin Dashboard', href: '/admin'},
+    {icon: <Users className="w-5 h-5"/>, label: 'Patients', href: '/admin/createPatient'},
+    {icon: <Stethoscope className="w-5 h-5"/>, label: 'Doctors', href: '/admin/createDoctor'},
   ];
 
   return (
@@ -59,19 +61,23 @@ const SideBarAdmin = ({children}) => {
         </button>
 
         {/* Logo Area */}
-        <div className="p-4 border-b border-gray-700 flex items-center justify-center">
-          <h1
+        <div className="p-4 border-b border-gray-700 flex items-center justify-center bg-white">
+          <div 
             className={`
-              font-bold text-xl 
               transition-all 
-              ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-full'}
-              overflow-hidden 
-              text-center
-              text-white
+              ${isCollapsed ? 'w-10 h-10 overflow-hidden' : 'w-full'}
+              flex justify-center items-center
             `}
           >
-            Admin Dashbaord
-          </h1>
+            <Image 
+              src={ChaincareLogo} 
+              alt="ChainCare Logo" 
+              width={isCollapsed ? 40 : 220} 
+              height={isCollapsed ? 40 : 100} 
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
 
         {/* Navigation Items */}
@@ -149,7 +155,7 @@ const SideBarAdmin = ({children}) => {
                 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-full'}
                 overflow-hidden 
                 whitespace-nowrap 
-                text-sm 
+                text-m
                 font-medium 
                 group-hover:text-white
               `}

@@ -625,498 +625,505 @@ export const ABI = {
 		"type": "function"
 	}
 ],
-    PATIENT_REGISTRY: [
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_newAdmin",
-				"type": "address"
-			}
-		],
-		"name": "addAdmin",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_patientAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "_allergy",
-				"type": "string"
-			}
-		],
-		"name": "addAllergy",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_patientAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "_condition",
-				"type": "string"
-			}
-		],
-		"name": "addMedicalCondition",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "newAdmin",
-				"type": "address"
-			}
-		],
-		"name": "AdminAdded",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "removedAdmin",
-				"type": "address"
-			}
-		],
-		"name": "AdminRemoved",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "doctorAddress",
-				"type": "address"
-			}
-		],
-		"name": "DoctorRegistered",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "patientAddress",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			}
-		],
-		"name": "PatientProfileUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "patientAddress",
-				"type": "address"
-			}
-		],
-		"name": "PatientRegistered",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "patientAddress",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "age",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "registrationTimestamp",
-				"type": "uint256"
-			}
-		],
-		"name": "PatientRegistered",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_patientAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "_name",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_age",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_gender",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_email",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_phoneNumber",
-				"type": "string"
-			}
-		],
-		"name": "registerPatient",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_admin",
-				"type": "address"
-			}
-		],
-		"name": "removeAdmin",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_patientAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "_name",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_age",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_email",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_phoneNumber",
-				"type": "string"
-			}
-		],
-		"name": "updatePatientProfile",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "admins",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getAllRegisteredPatients",
-		"outputs": [
-			{
-				"internalType": "address[]",
-				"name": "",
-				"type": "address[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_patientAddress",
-				"type": "address"
-			}
-		],
-		"name": "getPatientProfile",
-		"outputs": [
-			{
-				"components": [
-					{
-						"internalType": "string",
-						"name": "name",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "age",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "gender",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "email",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "phoneNumber",
-						"type": "string"
-					},
-					{
-						"internalType": "string[]",
-						"name": "medicalConditions",
-						"type": "string[]"
-					},
-					{
-						"internalType": "string[]",
-						"name": "allergies",
-						"type": "string[]"
-					},
-					{
-						"internalType": "bool",
-						"name": "isRegistered",
-						"type": "bool"
-					},
-					{
-						"internalType": "uint256",
-						"name": "registrationTimestamp",
-						"type": "uint256"
-					}
-				],
-				"internalType": "struct PatientRegistry.Patient",
-				"name": "",
-				"type": "tuple"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "INITIAL_ADMINS",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_address",
-				"type": "address"
-			}
-		],
-		"name": "isAdmin",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "patientProfiles",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "age",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "gender",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "email",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "phoneNumber",
-				"type": "string"
-			},
-			{
-				"internalType": "bool",
-				"name": "isRegistered",
-				"type": "bool"
-			},
-			{
-				"internalType": "uint256",
-				"name": "registrationTimestamp",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "primaryAdmin",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "registeredDoctors",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "registeredPatientAddresses",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "registeredPatients",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-],
+    PATIENT_REGISTRY:[
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "newAdmin",
+					"type": "address"
+				}
+			],
+			"name": "AdminAdded",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "removedAdmin",
+					"type": "address"
+				}
+			],
+			"name": "AdminRemoved",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "doctorAddress",
+					"type": "address"
+				}
+			],
+			"name": "DoctorRegistered",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "patientAddress",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "string",
+					"name": "name",
+					"type": "string"
+				}
+			],
+			"name": "PatientProfileUpdated",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "patientAddress",
+					"type": "address"
+				}
+			],
+			"name": "PatientRegistered",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "patientAddress",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "string",
+					"name": "name",
+					"type": "string"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "age",
+					"type": "uint256"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "registrationTimestamp",
+					"type": "uint256"
+				}
+			],
+			"name": "PatientRegistered",
+			"type": "event"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_newAdmin",
+					"type": "address"
+				}
+			],
+			"name": "addAdmin",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_patientAddress",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "_allergy",
+					"type": "string"
+				}
+			],
+			"name": "addAllergy",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_patientAddress",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "_condition",
+					"type": "string"
+				}
+			],
+			"name": "addMedicalCondition",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "admins",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "getAllAdmins",
+			"outputs": [
+				{
+					"internalType": "address[]",
+					"name": "",
+					"type": "address[]"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "getAllRegisteredPatients",
+			"outputs": [
+				{
+					"internalType": "address[]",
+					"name": "",
+					"type": "address[]"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "getInitialAdmins",
+			"outputs": [
+				{
+					"internalType": "address[3]",
+					"name": "",
+					"type": "address[3]"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_patientAddress",
+					"type": "address"
+				}
+			],
+			"name": "getPatientProfile",
+			"outputs": [
+				{
+					"components": [
+						{
+							"internalType": "string",
+							"name": "name",
+							"type": "string"
+						},
+						{
+							"internalType": "uint256",
+							"name": "age",
+							"type": "uint256"
+						},
+						{
+							"internalType": "string",
+							"name": "gender",
+							"type": "string"
+						},
+						{
+							"internalType": "string",
+							"name": "email",
+							"type": "string"
+						},
+						{
+							"internalType": "string",
+							"name": "phoneNumber",
+							"type": "string"
+						},
+						{
+							"internalType": "string[]",
+							"name": "medicalConditions",
+							"type": "string[]"
+						},
+						{
+							"internalType": "string[]",
+							"name": "allergies",
+							"type": "string[]"
+						},
+						{
+							"internalType": "bool",
+							"name": "isRegistered",
+							"type": "bool"
+						},
+						{
+							"internalType": "uint256",
+							"name": "registrationTimestamp",
+							"type": "uint256"
+						}
+					],
+					"internalType": "struct PatientRegistry.Patient",
+					"name": "",
+					"type": "tuple"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_address",
+					"type": "address"
+				}
+			],
+			"name": "isAdmin",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "patientProfiles",
+			"outputs": [
+				{
+					"internalType": "string",
+					"name": "name",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "age",
+					"type": "uint256"
+				},
+				{
+					"internalType": "string",
+					"name": "gender",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "email",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "phoneNumber",
+					"type": "string"
+				},
+				{
+					"internalType": "bool",
+					"name": "isRegistered",
+					"type": "bool"
+				},
+				{
+					"internalType": "uint256",
+					"name": "registrationTimestamp",
+					"type": "uint256"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "primaryAdmin",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_patientAddress",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "_name",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "_age",
+					"type": "uint256"
+				},
+				{
+					"internalType": "string",
+					"name": "_gender",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_email",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_phoneNumber",
+					"type": "string"
+				}
+			],
+			"name": "registerPatient",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "registeredDoctors",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "registeredPatientAddresses",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"name": "registeredPatients",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_admin",
+					"type": "address"
+				}
+			],
+			"name": "removeAdmin",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_patientAddress",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "_name",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "_age",
+					"type": "uint256"
+				},
+				{
+					"internalType": "string",
+					"name": "_email",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_phoneNumber",
+					"type": "string"
+				}
+			],
+			"name": "updatePatientProfile",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	],
     DOCTOR_REGISTRY: [
 	{
 		"inputs": [
