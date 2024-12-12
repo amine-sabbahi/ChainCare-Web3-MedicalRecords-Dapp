@@ -8,7 +8,7 @@ import Web3 from "web3";
 interface AuthContextType {
   user: {
     address: string | null;
-    role: 'admin' | 'patient';
+    role: 'admin' | 'patient'| 'doctor';
     isAuthenticated: boolean;
   };
   loading: boolean;
@@ -55,9 +55,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Only redirect if on an incompatible route
             if (
               (decoded.role === 'admin' && !pathname.startsWith('/admin')) ||
-              (decoded.role === 'patient' && !pathname.startsWith('/patient'))
+              (decoded.role === 'patient' && !pathname.startsWith('/patient')) ||
+              (decoded.role === 'doctor' && !pathname.startsWith('/doctor'))
             ) {
-              router.push(decoded.role === 'admin' ? '/admin' : '/patient');
+              router.push(decoded.role === 'admin' ? '/admin' : '/patient : /doctor');
             }
           } else {
             localStorage.removeItem('auth_token');
@@ -89,19 +90,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const provider = new Web3(window.ethereum);
         const contract = new provider.eth.Contract(ABI.MEDICAL_ACCESS_CONTROL, CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL);
         const isAdmin = await contract.methods.isAdmin(connectedAccount).call();
-        const role = isAdmin ? 'admin' : 'patient';
-        const token = generateJWT(connectedAccount, role);
+        const isDoctor = await contract.methods.isDoctor(connectedAccount).call();
+
+        const roleisAdmin = isAdmin ? 'admin' : 'patient';
+        const token = generateJWT(connectedAccount, roleisAdmin);
 
         localStorage.setItem('auth_token', token);
         setUser({
           address: connectedAccount,
-          role,
+          role: roleisAdmin,
           isAuthenticated: true,
         });
 
-        if (role === 'admin' && pathname !== '/admin') {
+        if (roleisAdmin === 'admin' && pathname !== '/admin') {
           router.push('/admin');
-        } else if (role === 'patient' && pathname !== '/patient') {
+        } else if (roleisAdmin === 'patient' && pathname !== '/patient') {
           router.push('/patient');
         }
       }
