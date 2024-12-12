@@ -1,176 +1,227 @@
 "use client";
 
-import { useState } from "react";
-import Navbar from "../components/navBar";
-
-export default function ImagesPage() {
-  const [images, setImages] = useState<any[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // État pour gérer la modal
-  const [newCategoryName, setNewCategoryName] = useState<string>(""); // Nom de la nouvelle catégorie
-
-  const handleFilter = (category: string) => {
-    setSelectedCategory(category);
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Web3 from "web3";
+import { useAuth } from "@/context/AuthContext";
+import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
+import SideBarAdmin from "@/components/SideBarAdmin";
+export default function PatientRegistryPage() {
+  const router = useRouter();
+  const { user, logout } = useAuth();
+  // State to store patients' data and modal visibility
+  const [patients, setPatients] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newPatient, setNewPatient] = useState({
+    patientAddress: '',
+    name: '',
+    age: '',
+    gender: '',
+    email: '',
+    phoneNumber: ''
+  });
+  // Fetch the list of patients
+  useEffect(() => {
+    const fetchPatients = async () => {
+      if (!window.ethereum) {
+        alert("Ethereum provider is not available. Please install MetaMask.");
+        return;
+      }
+      const provider = new Web3(window.ethereum);
+      const contract = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
+      try {
+        const patientAddresses = await contract.methods.getAllRegisteredPatients().call();
+        const patientsData = await Promise.all(patientAddresses.map(async (address) => {
+          const patientProfile = await contract.methods.getPatientProfile(address).call();
+          return {
+            address,
+            ...patientProfile
+          };
+        }));
+        setPatients(patientsData);
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+      }
+    };
+    fetchPatients();
+  }, []);
+  // Handle input changes for new patient
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewPatient({
+      ...newPatient,
+      [name]: value
+    });
   };
 
-  const handleAddCategory = () => {
-    if (newCategoryName && !categories.includes(newCategoryName)) {
-      setCategories((prevCategories) => [...prevCategories, newCategoryName]);
-      setSelectedCategory(newCategoryName);
+  // Handle submit to add a new patient
+  const handleAddPatient = async () => {
+    if (!window.ethereum) {
+      alert("Ethereum provider is not available. Please install MetaMask.");
+      return;
     }
-    setNewCategoryName(""); // Réinitialiser l'input
-    setIsModalOpen(false); // Fermer la modal
+    // Validate Ethereum address
+    if (!Web3.utils.isAddress(newPatient.patientAddress)) {
+      alert("Invalid patient address.");
+      return;
+    }
+    const provider = new Web3(window.ethereum);
+    const contract = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
+    try {
+      const accounts = await provider.eth.getAccounts();
+      await contract.methods.registerPatient(
+        newPatient.patientAddress,
+        newPatient.name,
+        newPatient.age,
+        newPatient.gender,
+        newPatient.email,
+        newPatient.phoneNumber
+      ).send({ from: accounts[0] });
+      // Close modal after adding patient
+      setIsModalOpen(false);
+      // Re-fetch patients list
+      const patientAddresses = await contract.methods.getAllRegisteredPatients().call();
+      const patientsData = await Promise.all(patientAddresses.map(async (address) => {
+        const patientProfile = await contract.methods.getPatientProfile(address).call();
+        return {
+          address,
+          ...patientProfile
+        };
+      }));
+      setPatients(patientsData);
+      // Reset form
+      setNewPatient({
+        patientAddress: '',
+        name: '',
+        age: '',
+        gender: '',
+        email: '',
+        phoneNumber: ''
+      });
+    } catch (error) {
+      console.error("Error adding patient:", error);
+      alert("Failed to add patient. Please try again.");
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Navbar */}
-      <Navbar activeSection="images" />
-
-      {/* Content */}
-      <div className="flex-1 bg-gray-50 py-6">
-        <div className="container mx-auto px-6">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-6">Gestion des Images</h1>
-
-          {/* Formulaire d'Upload */}
-          <div className="bg-white p-6 rounded-lg shadow-lg mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Uploader une Image</h2>
-            <form className="flex items-center space-x-4">
+    <SideBarAdmin>
+      <h1 className="text-3xl font-bold text-left text-black my-6">Patients Registry</h1>
+      {/* Add Patient Button */}
+      <button 
+        onClick={() => setIsModalOpen(true)} 
+        className="mb-6 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-300"
+      >
+        Add Patient
+      </button>
+      {/* Patients Table */}
+      <div className="overflow-x-auto shadow-md sm:rounded-lg">
+        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              <th scope="col" className="px-6 py-3">Patient Name</th>
+              <th scope="col" className="px-6 py-3">Age</th>
+              <th scope="col" className="px-6 py-3">Gender</th>
+              <th scope="col" className="px-6 py-3">Email</th>
+              <th scope="col" className="px-6 py-3">Phone Number</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((patient, index) => (
+              <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                <td className="px-6 py-4">{patient.name}</td>
+                <td className="px-6 py-4">{patient.age}</td>
+                <td className="px-6 py-4">{patient.gender}</td>
+                <td className="px-6 py-4">{patient.email}</td>
+                <td className="px-6 py-4">{patient.phoneNumber}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {/* Modal for Adding Patient */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
+          <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold mb-4">Add New Patient</h2>
+            <form className="space-y-4">
               <input
-                type="file"
-                className="flex-1 py-2 px-4 bg-gray-100 rounded-md shadow-md"
+                type="text"
+                name="patientAddress"
+                placeholder="Patient Ethereum Address"
+                value={newPatient.patientAddress}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+              <input
+                type="text"
+                name="name"
+                placeholder="Patient Name"
+                value={newPatient.name}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+              <input
+                type="number"
+                name="age"
+                placeholder="Age"
+                value={newPatient.age}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
               />
               <select
-                className="py-2 px-4 bg-gray-100 rounded-md shadow-md"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                name="gender"
+                value={newPatient.gender}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
               >
-                <option value="" disabled>
-                  Choisir une catégorie
-                </option>
-                {categories.length === 0 ? (
-                  <option value="" disabled>
-                    Aucune catégorie disponible
-                  </option>
-                ) : (
-                  categories.map((category, index) => (
-                    <option key={index} value={category}>
-                      {category}
-                    </option>
-                  ))
-                )}
-                <option value="add-new-category">Ajouter une nouvelle catégorie</option>
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
               </select>
-              <button
-                type="submit"
-                className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-all duration-300"
-              >
-                Uploader
-              </button>
-            </form>
-
-            {/* Ouvrir la modal pour ajouter une nouvelle catégorie */}
-            {selectedCategory === "add-new-category" && (
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-all duration-300"
-              >
-                Ajouter une catégorie
-              </button>
-            )}
-          </div>
-
-          {/* Modal pour ajouter une nouvelle catégorie */}
-          {isModalOpen && (
-            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-              <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                <h3 className="text-xl font-semibold mb-4">Ajouter une Nouvelle Catégorie</h3>
-                <input
-                  type="text"
-                  className="w-full py-2 px-4 mb-4 bg-gray-100 rounded-md shadow-md"
-                  placeholder="Nom de la catégorie"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                />
-                <div className="flex justify-end space-x-4">
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={handleAddCategory}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                  >
-                    Ajouter
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Filtre par Catégorie */}
-          <div className="mb-8 flex space-x-4">
-            <button
-              onClick={() => handleFilter("")}
-              className={`px-4 py-2 rounded-md ${
-                selectedCategory === "" ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-700"
-              }`}
-            >
-              Tout
-            </button>
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => handleFilter(category)}
-                className={`px-4 py-2 rounded-md ${
-                  selectedCategory === category ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-700"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {/* Gestion des Images */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {images
-              .filter((image) =>
-                selectedCategory ? image.category === selectedCategory : true
-              )
-              .map((image) => (
-                <div
-                  key={image.id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden"
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={newPatient.email}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+              <input
+                type="text"
+                name="phoneNumber"
+                placeholder="Phone Number"
+                value={newPatient.phoneNumber}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+              <div className="flex justify-between">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-6 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400"
                 >
-                  <img
-                    src={image.url}
-                    alt={image.name}
-                    className="w-full h-56 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="text-xl font-semibold text-gray-800">{image.name}</h3>
-                    <p className="text-gray-600">{image.category}</p>
-
-                    <div className="flex space-x-4 mt-4">
-                      <button className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-all duration-300">
-                        Télécharger
-                      </button>
-                      <button className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-all duration-300">
-                        Modifier
-                      </button>
-                      <button className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-300">
-                        Supprimer
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </div>
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddPatient}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Add Patient
+                </button>
+              </div>
+            </form>
+            </div>
         </div>
-      </div>
-    </div>
+      )}
+    </SideBarAdmin>
   );
 }
