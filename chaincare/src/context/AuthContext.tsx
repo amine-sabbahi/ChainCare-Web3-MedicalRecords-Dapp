@@ -89,25 +89,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const connectedAccount = accounts[0];
         const provider = new Web3(window.ethereum);
         const contract = new provider.eth.Contract(ABI.MEDICAL_ACCESS_CONTROL, CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL);
+
+        // Retrieve roles from the contract
         const isAdmin = await contract.methods.isAdmin(connectedAccount).call();
         const isDoctor = await contract.methods.isDoctor(connectedAccount).call();
 
-        const roleisAdmin = isAdmin ? 'admin' : 'patient';
-        const token = generateJWT(connectedAccount, roleisAdmin);
+        // Determine user role
+        let role = 'patient'; // Default role
+        if (isAdmin) {
+            role = 'admin';
+        } else if (isDoctor) {
+            role = 'doctor';
+        }
 
+        // Generate a JWT token based on the role
+        const token = generateJWT(connectedAccount, role);
+
+        // Save token and user info in local storage
         localStorage.setItem('auth_token', token);
         setUser({
-          address: connectedAccount,
-          role: roleisAdmin,
-          isAuthenticated: true,
+            address: connectedAccount,
+            role: role,
+            isAuthenticated: true,
         });
 
-        if (roleisAdmin === 'admin' && pathname !== '/admin') {
-          router.push('/admin');
-        } else if (roleisAdmin === 'patient' && pathname !== '/patient') {
-          router.push('/patient');
+        // Redirect based on the role
+        if (role === 'admin' && pathname !== '/admin') {
+            router.push('/admin');
+        } else if (role === 'doctor' && pathname !== '/doctor') {
+            router.push('/doctor');
+        } else if (role === 'patient' && pathname !== '/patient') {
+            router.push('/patient');
         }
       }
+
     } catch (error) {
       console.error('Authentication failed:', error);
     } finally {
