@@ -58,8 +58,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               (decoded.role === 'patient' && !pathname.startsWith('/patient')) ||
               (decoded.role === 'doctor' && !pathname.startsWith('/doctor'))
             ) {
-              router.push(decoded.role === 'admin' ? '/admin' : '/patient : /doctor');
-            }
+                const redirectPath =
+                  decoded.role === 'admin' ? '/admin' :
+                  decoded.role === 'patient' ? '/patient' :
+                  '/doctor';
+                router.push(redirectPath);
+              }
           } else {
             localStorage.removeItem('auth_token');
           }
@@ -88,12 +92,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (accounts.length > 0) {
         const connectedAccount = accounts[0];
         const provider = new Web3(window.ethereum);
-        const contract = new provider.eth.Contract(ABI.MEDICAL_ACCESS_CONTROL, CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL);
+
+        const contract_Doctor_Registery = new provider.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
+        const contract_Patient_Registery = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
+        const contract_Admin_Registery = new provider.eth.Contract(ABI.MEDICAL_ACCESS_CONTROL, CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL)
 
         // Retrieve roles from the contract
-        const isPatient = await contract.methods.isPatient(connectedAccount).call();
-        const isAdmin = await contract.methods.isAdmin(connectedAccount).call();
-        const isDoctor = await contract.methods.isDoctor(connectedAccount).call();
+        const isPatient = await contract_Patient_Registery.methods.isPatient(connectedAccount).call();
+        const isAdmin = await contract_Admin_Registery.methods.isAdmin(connectedAccount).call();
+        const isDoctor = await contract_Doctor_Registery.methods.isDoctor(connectedAccount).call();
 
 
 
