@@ -1,25 +1,24 @@
 "use client";
 
-// src/app/patient/page.tsx
+// src/app/doctor/page.tsx
 import '../globals.css';
 import { useState, useEffect } from 'react';
 import { Button, Container, Grid, Card, Typography } from '@mui/material';
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 import Web3 from 'web3';
 
-export default function Dashboard() {
-  const [patientInfo, setPatientInfo] = useState({
-    patientAddress: '',
+export default function DoctorDashboard() {
+  const [doctorInfo, setDoctorInfo] = useState({
+    doctorAddress: '',
     name: '',
-    age: '',
-    gender: '',
+    specialization: '',
     email: '',
-    phoneNumber: ''
-  });  // Store patient info
+    phoneNumber: '',
+  }); // Store doctor info
   const [loading, setLoading] = useState(true); // Handle loading state
 
-  // Function to fetch patient info from contract
-  const fetchPatientInfo = async () => {
+  // Function to fetch doctor info from contract
+  const fetchDoctorInfo = async () => {
     try {
       if (!window.ethereum) {
         alert("Ethereum provider is not available. Please install MetaMask.");
@@ -27,40 +26,39 @@ export default function Dashboard() {
       }
 
       const web3 = new Web3(window.ethereum);
-      const contract = new web3.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
+      const contract = new web3.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
 
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const patientAddress = accounts[0]; // Current user address
+      const doctorAddress = accounts[0]; // Current user address
 
-      const info: any = await contract.methods.getPatientProfile(patientAddress).call();
-      console.log("Fetched patient data:", info);
+      const info: any = await contract.methods.getDoctorProfile(doctorAddress).call();
+      console.log("Fetched doctor data:", info);
       
       if (info) {
-        setPatientInfo({
-          patientAddress: patientAddress,
+        setDoctorInfo({
+          doctorAddress: doctorAddress,
           name: info.name || 'Unknown',
-          age: info.age ? Number(info.age) : 'Not specified',
-          gender: info.gender || 'Not specified',
+          specialization: info.specialization || 'Not specified',
           email: info.email || 'Not specified',
-          phoneNumber: info.phoneNumber?.toString() || 'Not specified',
+          phoneNumber: info.phoneNumber || 'Not specified',
         });
       }
     } catch (error) {
-      console.error("Error fetching patient data:", error);
+      console.error("Error fetching doctor data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch patient info on component mount
+  // Fetch doctor info on component mount
   useEffect(() => {
-    fetchPatientInfo();
+    fetchDoctorInfo();
   }, []);
 
-  // Log the updated patient info when it changes
+  // Log the updated doctor info when it changes
   useEffect(() => {
-    console.log("Updated patient info:", patientInfo);
-  }, [patientInfo]); // This effect runs whenever patientInfo changes
+    console.log("Updated doctor info:", doctorInfo);
+  }, [doctorInfo]);
 
   return (
     <div className="bg-pastel-100 min-h-screen">
@@ -71,7 +69,7 @@ export default function Dashboard() {
           className="font-semibold"
           sx={{ color: '#a8d5e2' }} // Pastel color
         >
-          Patient Dashboard
+          Doctor Dashboard
         </Typography>
       </header>
 
@@ -79,9 +77,9 @@ export default function Dashboard() {
         <section>
           {loading ? (
             <Typography variant="h6" align="center">
-              Loading patient data...
+              Loading doctor data...
             </Typography>
-          ) : patientInfo ?  (
+          ) : doctorInfo ? (
             <>
               <Typography
                 variant="h5"
@@ -89,23 +87,21 @@ export default function Dashboard() {
                 align="center"
                 className="text-pastel-800 font-bold"
               >
-                Welcome, {patientInfo.name}
+                Welcome, Dr. {doctorInfo.name}
               </Typography>
-              
+
               <Typography
                 variant="body1"
                 color="textSecondary"
                 align="center"
                 className="text-pastel-600"
               >
-                Age: {patientInfo.age} | Gender: {patientInfo.gender} | Contact: {patientInfo.phoneNumber}
-
+                Specialization: {doctorInfo.specialization} | Contact: {doctorInfo.phoneNumber}
               </Typography>
-
             </>
           ) : (
             <Typography variant="h6" align="center">
-              No patient data available.
+              No doctor data available.
             </Typography>
           )}
         </section>
@@ -119,7 +115,7 @@ export default function Dashboard() {
             Quick Actions
           </Typography>
           <Grid container spacing={4} sx={{ mt: 3 }}>
-            {/* Card for medical records */}
+            {/* Card for viewing patients */}
             <Grid item xs={12} sm={4}>
               <Card
                 sx={{
@@ -130,10 +126,10 @@ export default function Dashboard() {
                 }}
               >
                 <Typography variant="h6" className="text-pastel-800">
-                  My Medical Records
+                  View Patients
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  View and download your medical records.
+                  View a list of all registered patients.
                 </Typography>
                 <Button
                   variant="contained"
@@ -142,13 +138,13 @@ export default function Dashboard() {
                     backgroundColor: '#a8d5e2',
                     ':hover': { backgroundColor: '#86c5d8' },
                   }}
-                  href="/dashboard/records"
+                  href="/doctor/patients"
                 >
-                  View
+                  View Patients
                 </Button>
               </Card>
             </Grid>
-            {/* Card for managing permissions */}
+            {/* Card for managing access to medical records */}
             <Grid item xs={12} sm={4}>
               <Card
                 sx={{
@@ -159,10 +155,10 @@ export default function Dashboard() {
                 }}
               >
                 <Typography variant="h6" className="text-pastel-800">
-                  Manage Permissions
+                  Manage Patient Access
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  Grant or revoke access to your records.
+                  Grant or revoke access to patient records.
                 </Typography>
                 <Button
                   variant="contained"
@@ -171,13 +167,13 @@ export default function Dashboard() {
                     backgroundColor: '#f5b6c4',
                     ':hover': { backgroundColor: '#e298a5' },
                   }}
-                  href="/dashboard/permissions"
+                  href="/doctor/manage-access"
                 >
-                  Manage
+                  Manage Access
                 </Button>
               </Card>
             </Grid>
-            {/* Card for action history */}
+            {/* Card for adding or updating medical records */}
             <Grid item xs={12} sm={4}>
               <Card
                 sx={{
@@ -188,10 +184,10 @@ export default function Dashboard() {
                 }}
               >
                 <Typography variant="h6" className="text-pastel-800">
-                  History
+                  Add Medical Record
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  Check your action history on medical records.
+                  Add or update medical records for your patients.
                 </Typography>
                 <Button
                   variant="contained"
@@ -200,9 +196,9 @@ export default function Dashboard() {
                     backgroundColor: '#fad6a5',
                     ':hover': { backgroundColor: '#f7c68a' },
                   }}
-                  href="/dashboard/audit"
+                  href="/doctor/add-record"
                 >
-                  View History
+                  Add Record
                 </Button>
               </Card>
             </Grid>

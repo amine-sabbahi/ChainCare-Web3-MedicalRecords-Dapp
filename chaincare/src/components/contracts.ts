@@ -3,7 +3,7 @@ export const CONTRACT_ADDRESSES = {
     PATIENT_REGISTRY: "0x271EBA7A4a2Dd6b228D0c03BE71A4Eaf4b7648E4",
     DOCTOR_REGISTRY: "0xfA350511Dafa8DCd259fcE1b7d7bc717A77e1f65",
     AUDIT_TRAIL: "0xB7C18f11DDa65E2Ab417cE0557c563bF4873470c",
-    MEDICAL_ACCESS_CONTROL: "0xDf44A9954AED00696EB0Fa1C87342Abaf077E0Ab",
+    MEDICAL_ACCESS_CONTROL: "0xEd1fC5c730DB6e49C70ffE422a94C57aBeA5e3F8",
 };
 
 export const ABI = {
@@ -2039,26 +2039,19 @@ export const ABI = {
 			"type": "function"
 		},
 		{
-			"inputs": [],
-			"name": "getAllAdmins",
-			"outputs": [
+			"inputs": [
 				{
-					"internalType": "address[]",
-					"name": "",
-					"type": "address[]"
+					"internalType": "address",
+					"name": "_address",
+					"type": "address"
 				}
 			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [],
-			"name": "getInitialAdmins",
+			"name": "isAdmin",
 			"outputs": [
 				{
-					"internalType": "address[3]",
+					"internalType": "bool",
 					"name": "",
-					"type": "address[3]"
+					"type": "bool"
 				}
 			],
 			"stateMutability": "view",
@@ -2072,7 +2065,26 @@ export const ABI = {
 					"type": "address"
 				}
 			],
-			"name": "isAdmin",
+			"name": "isDoctor",
+			"outputs": [
+				{
+					"internalType": "bool",
+					"name": "",
+					"type": "bool"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_address",
+					"type": "address"
+				}
+			],
+			"name": "isPatient",
 			"outputs": [
 				{
 					"internalType": "bool",
