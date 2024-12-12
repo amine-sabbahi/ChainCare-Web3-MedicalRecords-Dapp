@@ -91,16 +91,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const contract = new provider.eth.Contract(ABI.MEDICAL_ACCESS_CONTROL, CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL);
 
         // Retrieve roles from the contract
+        const isPatient = await contract.methods.isPatient(connectedAccount).call();
         const isAdmin = await contract.methods.isAdmin(connectedAccount).call();
         const isDoctor = await contract.methods.isDoctor(connectedAccount).call();
 
+
+
         // Determine user role
-        let role = 'patient'; // Default role
-        if (isAdmin) {
+        let role = ''
+        if (isPatient){
+          role = 'patient'
+        }
+        else if (isAdmin) {
             role = 'admin';
         } else if (isDoctor) {
             role = 'doctor';
         }
+
+        console.log("ROle ===>",role)
 
         // Generate a JWT token based on the role
         const token = generateJWT(connectedAccount, role);
