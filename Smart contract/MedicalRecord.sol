@@ -21,7 +21,7 @@ contract MedicalRecordsAccessControl {
     address[3] private INITIAL_ADMINS = [
         0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,
         0xe1e55081c8CB97E6E64f2DBF033D286141f90026,
-        0xBDc51b1463cAf8C8e24619E0dC0D7AA471d90c22
+        0x70997970C51812dc3A010C7d01b50e0d17dc79C8
     ];
 
     event AdminAdded(address indexed newAdmin, string name);
@@ -66,7 +66,7 @@ contract MedicalRecordsAccessControl {
     ) external onlyPrimaryAdmin {
         require(!admins[_newAdmin], "Address is already an admin");
         require(_newAdmin != address(0), "Invalid admin address");
-        
+
         admins[_newAdmin] = true;
         adminDetails[_newAdmin] = AdminDetails({
             fullName: _fullName,
@@ -75,7 +75,7 @@ contract MedicalRecordsAccessControl {
             isActive: true,
             registrationTimestamp: block.timestamp
         });
-        
+
         emit AdminAdded(_newAdmin, _fullName);
     }
 
@@ -86,22 +86,22 @@ contract MedicalRecordsAccessControl {
         string memory _phoneNumber
     ) external onlyPrimaryAdmin {
         require(admins[_adminAddress], "Address is not an admin");
-        
+
         AdminDetails storage adminInfo = adminDetails[_adminAddress];
         adminInfo.fullName = _fullName;
         adminInfo.email = _email;
         adminInfo.phoneNumber = _phoneNumber;
-        
+
         emit AdminDetailsUpdated(_adminAddress, _fullName);
     }
 
     function removeAdmin(address _admin) external onlyPrimaryAdmin {
         require(_admin != primaryAdmin, "Cannot remove primary admin");
         require(admins[_admin], "Address is not an admin");
-        
+
         admins[_admin] = false;
         adminDetails[_admin].isActive = false;
-        
+
         emit AdminRemoved(_admin);
     }
 
@@ -111,10 +111,10 @@ contract MedicalRecordsAccessControl {
     }
 
     // Function to get admin details
-    function getAdminDetails(address _address) 
-        external 
-        view 
-        returns (AdminDetails memory) 
+    function getAdminDetails(address _address)
+        external
+        view
+        returns (AdminDetails memory)
     {
         return adminDetails[_address];
     }
@@ -148,8 +148,8 @@ contract PatientRegistry is MedicalRecordsAccessControl {
     address[] public registeredPatientAddresses;
 
     event PatientRegistered(
-        address indexed patientAddress, 
-        string name, 
+        address indexed patientAddress,
+        string name,
         uint age,
         uint registrationTimestamp
     );
@@ -169,7 +169,7 @@ contract PatientRegistry is MedicalRecordsAccessControl {
     ) external onlyAdmin {
         require(!patientProfiles[_patientAddress].isRegistered, "Patient already registered");
         require(_patientAddress != address(0), "Invalid patient address");
-        
+
         patientProfiles[_patientAddress] = Patient({
             name: _name,
             age: _age,
@@ -184,7 +184,7 @@ contract PatientRegistry is MedicalRecordsAccessControl {
 
         registeredPatientAddresses.push(_patientAddress);
         registeredPatients[_patientAddress] = true;
-        
+
         emit PatientRegistered(_patientAddress, _name, _age, block.timestamp);
     }
 
@@ -196,7 +196,7 @@ contract PatientRegistry is MedicalRecordsAccessControl {
         string memory _phoneNumber
     ) external onlyAdmin {
         require(patientProfiles[_patientAddress].isRegistered, "Patient not registered");
-        
+
         Patient storage patient = patientProfiles[_patientAddress];
         patient.name = _name;
         patient.age = _age;
@@ -207,7 +207,7 @@ contract PatientRegistry is MedicalRecordsAccessControl {
     }
 
     function addMedicalCondition(
-        address _patientAddress, 
+        address _patientAddress,
         string memory _condition
     ) external onlyAdmin {
         require(patientProfiles[_patientAddress].isRegistered, "Patient not registered");
@@ -215,25 +215,25 @@ contract PatientRegistry is MedicalRecordsAccessControl {
     }
 
     function addAllergy(
-        address _patientAddress, 
+        address _patientAddress,
         string memory _allergy
     ) external onlyAdmin {
         require(patientProfiles[_patientAddress].isRegistered, "Patient not registered");
         patientProfiles[_patientAddress].allergies.push(_allergy);
     }
 
-    function getPatientProfile(address _patientAddress) 
-        external 
-        view 
-        returns (Patient memory) 
+    function getPatientProfile(address _patientAddress)
+        external
+        view
+        returns (Patient memory)
     {
         return patientProfiles[_patientAddress];
     }
 
-    function getAllRegisteredPatients() 
-        external 
-        view 
-        returns (address[] memory) 
+    function getAllRegisteredPatients()
+        external
+        view
+        returns (address[] memory)
     {
         return registeredPatientAddresses;
     }
@@ -255,8 +255,8 @@ contract DoctorRegistry is MedicalRecordsAccessControl {
     address[] public registeredDoctorAddresses;
 
     event DoctorRegistered(
-        address indexed doctorAddress, 
-        string name, 
+        address indexed doctorAddress,
+        string name,
         string specialization,
         uint registrationTimestamp
     );
@@ -276,7 +276,7 @@ contract DoctorRegistry is MedicalRecordsAccessControl {
     ) external onlyAdmin {
         require(!doctorProfiles[_doctorAddress].isActive, "Doctor already registered");
         require(_doctorAddress != address(0), "Invalid doctor address");
-        
+
         doctorProfiles[_doctorAddress] = Doctor({
             name: _name,
             specialization: _specialization,
@@ -289,11 +289,11 @@ contract DoctorRegistry is MedicalRecordsAccessControl {
 
         registeredDoctorAddresses.push(_doctorAddress);
         registeredDoctors[_doctorAddress] = true;
-        
+
         emit DoctorRegistered(
-            _doctorAddress, 
-            _name, 
-            _specialization, 
+            _doctorAddress,
+            _name,
+            _specialization,
             block.timestamp
         );
     }
@@ -307,7 +307,7 @@ contract DoctorRegistry is MedicalRecordsAccessControl {
         string[] memory _qualifications
     ) external onlyAdmin {
         require(doctorProfiles[_doctorAddress].isActive, "Doctor not registered");
-        
+
         Doctor storage doctor = doctorProfiles[_doctorAddress];
         doctor.name = _name;
         doctor.specialization = _specialization;
@@ -318,18 +318,18 @@ contract DoctorRegistry is MedicalRecordsAccessControl {
         emit DoctorProfileUpdated(_doctorAddress, _name);
     }
 
-    function getDoctorProfile(address _doctorAddress) 
-        external 
-        view 
-        returns (Doctor memory) 
+    function getDoctorProfile(address _doctorAddress)
+        external
+        view
+        returns (Doctor memory)
     {
         return doctorProfiles[_doctorAddress];
     }
 
-    function getAllRegisteredDoctors() 
-        external 
-        view 
-        returns (address[] memory) 
+    function getAllRegisteredDoctors()
+        external
+        view
+        returns (address[] memory)
     {
         return registeredDoctorAddresses;
     }
@@ -357,8 +357,8 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
 
 
     event MedicalRecordAdded(
-        bytes32 indexed recordId, 
-        address indexed patient, 
+        bytes32 indexed recordId,
+        address indexed patient,
         address indexed doctor,
         string recordType
     );
@@ -373,12 +373,12 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
     );
 
     event DoctorAccessGranted(
-        address indexed patient, 
+        address indexed patient,
         address indexed doctor
     );
 
     event DoctorAccessRevoked(
-        address indexed patient, 
+        address indexed patient,
         address indexed doctor
     );
 
@@ -389,14 +389,14 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
         string memory _description
     ) external {
         require(
-            msg.sender == _patient || 
-            patientDoctorAccess[_patient][msg.sender] || 
-            registeredDoctors[msg.sender], 
+            msg.sender == _patient ||
+            patientDoctorAccess[_patient][msg.sender] ||
+            registeredDoctors[msg.sender],
             "Unauthorized to add record"
         );
 
         bytes32 recordId = keccak256(abi.encodePacked(_patient, _ipfsHash, block.timestamp));
-        
+
         medicalRecords[recordId] = MedicalRecord({
             patient: _patient,
             doctor: msg.sender,
@@ -419,10 +419,10 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
         string memory _description
     ) external {
         MedicalRecord storage record = medicalRecords[_recordId];
-        
+
         require(
-            msg.sender == record.patient || 
-            msg.sender == record.doctor, 
+            msg.sender == record.patient ||
+            msg.sender == record.doctor,
             "Unauthorized to update record"
         );
 
@@ -435,10 +435,10 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
 
     function deleteMedicalRecord(bytes32 _recordId) external {
         MedicalRecord storage record = medicalRecords[_recordId];
-        
+
         require(
-            msg.sender == record.patient || 
-            msg.sender == record.doctor, 
+            msg.sender == record.patient ||
+            msg.sender == record.doctor,
             "Unauthorized to delete record"
         );
 
@@ -457,34 +457,34 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
         emit DoctorAccessRevoked(msg.sender, _doctor);
     }
 
-    function getMedicalRecordsByPatient(address _patient) 
-        external 
-        view 
-        returns (bytes32[] memory) 
+    function getMedicalRecordsByPatient(address _patient)
+        external
+        view
+        returns (bytes32[] memory)
     {
         return patientRecords[_patient];
     }
 
-    function getMedicalRecordsByDoctor(address _doctor) 
-        external 
-        view 
-        returns (bytes32[] memory) 
+    function getMedicalRecordsByDoctor(address _doctor)
+        external
+        view
+        returns (bytes32[] memory)
     {
         return doctorRecords[_doctor];
     }
 
-    function getMedicalRecord(bytes32 _recordId) 
-        external 
-        view 
-        returns (MedicalRecord memory) 
+    function getMedicalRecord(bytes32 _recordId)
+        external
+        view
+        returns (MedicalRecord memory)
     {
         return medicalRecords[_recordId];
     }
 
-    function checkDoctorAccess(address _patient, address _doctor) 
-        external 
-        view 
-        returns (bool) 
+    function checkDoctorAccess(address _patient, address _doctor)
+        external
+        view
+        returns (bool)
     {
         return patientDoctorAccess[_patient][_doctor];
     }
@@ -523,14 +523,14 @@ contract AuditTrail is MedicalRecordsAccessControl {
     AuditLog[] public auditLogs;
 
     event AuditLogCreated(
-        address indexed actor, 
-        string action, 
+        address indexed actor,
+        string action,
         bytes32 indexed recordId
     );
 
     function logAction(
-        address _actor, 
-        string memory _action, 
+        address _actor,
+        string memory _action,
         bytes32 _recordId
     ) external onlyAdmin {
         AuditLog memory newLog = AuditLog({
@@ -548,27 +548,68 @@ contract AuditTrail is MedicalRecordsAccessControl {
         return auditLogs.length;
     }
 
-    function getAuditLogByIndex(uint _index) 
-        external 
-        view 
-        returns (AuditLog memory) 
+    function getAuditLogByIndex(uint _index)
+        external
+        view
+        returns (AuditLog memory)
     {
         require(_index < auditLogs.length, "Invalid index");
         return auditLogs[_index];
     }
 
-    function getLatestAuditLogs(uint _count) 
-        external 
-        view 
-        returns (AuditLog[] memory) 
+    function getLatestAuditLogs(uint _count)
+        external
+        view
+        returns (AuditLog[] memory)
     {
         uint count = _count > auditLogs.length ? auditLogs.length : _count;
         AuditLog[] memory latestLogs = new AuditLog[](count);
-        
+
         for (uint i = 0; i < count; i++) {
             latestLogs[i] = auditLogs[auditLogs.length - count + i];
         }
-        
+
         return latestLogs;
+    }
+}
+
+contract DocumentStorage {
+    struct Document {
+        address doctorAddress;
+        address patientAddress;
+        string[] fileLinks;
+        uint256 timestamp; // Added timestamp
+    }
+
+    // Mapping of patient address to their documents
+    mapping(address => Document[]) public patientDocuments;
+
+    // Event emitted when a document is uploaded
+    event DocumentUploaded(
+        address indexed doctorAddress,
+        address indexed patientAddress,
+        string[] fileLinks,
+        uint256 timestamp
+    );
+
+    // Function to store document data
+    function uploadDocument(address patientAddress, string[] memory fileLinks) public {
+        require(patientAddress != address(0), "Invalid patient address");
+
+        // Store the document information
+        patientDocuments[patientAddress].push(Document({
+            doctorAddress: msg.sender,
+            patientAddress: patientAddress,
+            fileLinks: fileLinks,
+            timestamp: block.timestamp // Store the current block's timestamp
+        }));
+
+        // Emit an event for document upload
+        emit DocumentUploaded(msg.sender, patientAddress, fileLinks, block.timestamp);
+    }
+
+    // Function to retrieve documents for a patient
+    function getDocuments(address patientAddress) public view returns (Document[] memory) {
+        return patientDocuments[patientAddress];
     }
 }
