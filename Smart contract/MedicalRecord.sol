@@ -17,12 +17,19 @@ contract MedicalRecordsAccessControl {
     mapping(address => bool) public registeredDoctors;
     mapping(address => bool) public registeredPatients;
 
+    mapping(address => string[]) public adminEventHistory;
+    mapping(address => string[]) public doctorEventHistory;
+    mapping(address => string[]) public patientEventHistory;
+
     // Predefined admin addresses
     address[3] private INITIAL_ADMINS = [
         0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,
         0xe1e55081c8CB97E6E64f2DBF033D286141f90026,
         0xBDc51b1463cAf8C8e24619E0dC0D7AA471d90c22
     ];
+
+    // Array to store all admins
+    address[] public allAdmins;
 
     event AdminAdded(address indexed newAdmin, string name);
     event AdminRemoved(address indexed removedAdmin);
@@ -34,6 +41,7 @@ contract MedicalRecordsAccessControl {
         // Set initial admins during contract deployment
         for(uint i = 0; i < INITIAL_ADMINS.length; i++) {
             admins[INITIAL_ADMINS[i]] = true;
+            allAdmins.push(INITIAL_ADMINS[i]);
         }
         primaryAdmin = INITIAL_ADMINS[0]; // First admin is primary admin
     }
@@ -68,6 +76,7 @@ contract MedicalRecordsAccessControl {
         require(_newAdmin != address(0), "Invalid admin address");
         
         admins[_newAdmin] = true;
+        allAdmins.push(_newAdmin);  // Add the new admin address to the allAdmins array
         adminDetails[_newAdmin] = AdminDetails({
             fullName: _fullName,
             email: _email,
@@ -77,6 +86,7 @@ contract MedicalRecordsAccessControl {
         });
         
         emit AdminAdded(_newAdmin, _fullName);
+        adminEventHistory[_newAdmin].push("AdminAdded event triggered");
     }
 
     function updateAdminDetails(
@@ -93,6 +103,11 @@ contract MedicalRecordsAccessControl {
         adminInfo.phoneNumber = _phoneNumber;
         
         emit AdminDetailsUpdated(_adminAddress, _fullName);
+        adminEventHistory[_adminAddress].push("AdminDetailsUpdated event triggered");
+    }
+
+    function getAdminEventHistory(address _adminAddress) external view returns (string[] memory) {
+        return adminEventHistory[_adminAddress];
     }
 
     function removeAdmin(address _admin) external onlyPrimaryAdmin {
@@ -101,6 +116,15 @@ contract MedicalRecordsAccessControl {
         
         admins[_admin] = false;
         adminDetails[_admin].isActive = false;
+        
+        // Remove admin from the allAdmins array
+        for (uint i = 0; i < allAdmins.length; i++) {
+            if (allAdmins[i] == _admin) {
+                allAdmins[i] = allAdmins[allAdmins.length - 1];
+                allAdmins.pop();
+                break;
+            }
+        }
         
         emit AdminRemoved(_admin);
     }
@@ -119,6 +143,15 @@ contract MedicalRecordsAccessControl {
         return adminDetails[_address];
     }
 
+    // Function to get all admins with their details
+    function getAllAdminsDetails() external view returns (AdminDetails[] memory) {
+        AdminDetails[] memory allAdminDetails = new AdminDetails[](allAdmins.length);
+        for (uint i = 0; i < allAdmins.length; i++) {
+            allAdminDetails[i] = adminDetails[allAdmins[i]];
+        }
+        return allAdminDetails;
+    }
+
     // Function to check if an address is a doctor
     function isDoctor(address _address) external view returns (bool) {
         return registeredDoctors[_address];
@@ -129,6 +162,8 @@ contract MedicalRecordsAccessControl {
         return registeredPatients[_address];
     }
 }
+
+
 
 // Patient Registry Contract
 contract PatientRegistry is MedicalRecordsAccessControl {
@@ -143,7 +178,7 @@ contract PatientRegistry is MedicalRecordsAccessControl {
         bool isRegistered;
         uint registrationTimestamp;
     }
-
+    
     mapping(address => Patient) public patientProfiles;
     address[] public registeredPatientAddresses;
 
@@ -157,6 +192,13 @@ contract PatientRegistry is MedicalRecordsAccessControl {
     event PatientProfileUpdated(
         address indexed patientAddress,
         string name
+    );
+
+    event TransactionOnPatient(
+    address indexed patientAddress,
+    address indexed performedBy,
+    string actionType,           
+    uint timestamp             
     );
 
     function registerPatient(
@@ -194,8 +236,7 @@ contract PatientRegistry is MedicalRecordsAccessControl {
         uint _age,
         string memory _email,
         string memory _phoneNumber
-    ) external onlyAdmin {
-        require(patientProfiles[_patientAddress].isRegistered, "Patient not registered");
+    ) public   {
         
         Patient storage patient = patientProfiles[_patientAddress];
         patient.name = _name;
@@ -204,6 +245,7 @@ contract PatientRegistry is MedicalRecordsAccessControl {
         patient.phoneNumber = _phoneNumber;
 
         emit PatientProfileUpdated(_patientAddress, _name);
+        emit TransactionOnPatient(_patientAddress, msg.sender, "UpdatePatientProfile", block.timestamp);
     }
 
     function addMedicalCondition(
@@ -381,6 +423,14 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
         address indexed patient, 
         address indexed doctor
     );
+    
+    
+    event TransactionOnPatient(
+        address indexed patientAddress,
+        address indexed performedBy,
+        string actionType,           
+        uint timestamp             
+    );
 
     function addMedicalRecord(
         address _patient,
@@ -449,12 +499,16 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
     function grantDoctorAccess(address _doctor) public {
         patientDoctorAccess[msg.sender][_doctor] = true;
         emit DoctorAccessGranted(msg.sender, _doctor);
+        emit TransactionOnPatient(msg.sender, msg.sender, "GrantAccess", block.timestamp);
+
     }
 
 
     function revokeDoctorAccess(address _doctor) public  {
         patientDoctorAccess[msg.sender][_doctor] = false;
         emit DoctorAccessRevoked(msg.sender, _doctor);
+        emit TransactionOnPatient(msg.sender, msg.sender, "GrantAccess", block.timestamp);
+
     }
 
     function getMedicalRecordsByPatient(address _patient) 
