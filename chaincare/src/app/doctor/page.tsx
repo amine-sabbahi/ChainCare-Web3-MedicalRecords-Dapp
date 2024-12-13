@@ -138,7 +138,7 @@ export default function DoctorDashboard() {
                     backgroundColor: '#a8d5e2',
                     ':hover': { backgroundColor: '#86c5d8' },
                   }}
-                  href="/doctor/patients"
+                  href="/doctor/view_patients"
                 >
                   View Patients
                 </Button>

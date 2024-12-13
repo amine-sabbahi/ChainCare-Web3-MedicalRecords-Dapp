@@ -92,16 +92,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (accounts.length > 0) {
         const connectedAccount = accounts[0];
         const provider = new Web3(window.ethereum);
-
+        const network = await provider.eth.net.getId();
+        console.log("Connected network:", network);
+        console.log("hii")
         const contract_Doctor_Registery = new provider.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
         const contract_Patient_Registery = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
         const contract_Admin_Registery = new provider.eth.Contract(ABI.MEDICAL_ACCESS_CONTROL, CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL)
-
+        console.log("hi2,",contract_Doctor_Registery.methods)
+        console.log("hi3",contract_Patient_Registery.methods)
+        console.log("hi4",contract_Admin_Registery.methods)
         // Retrieve roles from the contract
+                console.log("hi",contract_Patient_Registery.methods.isPatient(connectedAccount).call())
+
         const isPatient = await contract_Patient_Registery.methods.isPatient(connectedAccount).call();
         const isAdmin = await contract_Admin_Registery.methods.isAdmin(connectedAccount).call();
         const isDoctor = await contract_Doctor_Registery.methods.isDoctor(connectedAccount).call();
-
+        
 
 
         // Determine user role

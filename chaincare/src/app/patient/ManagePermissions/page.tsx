@@ -5,6 +5,17 @@ import { useAuth } from '@/context/AuthContext';
 import { Button, Container, Grid, Card, Typography, Box, List, ListItem, ListItemText, Switch } from '@mui/material';
 import { Person, ExitToApp, History, MedicalServices, Security } from '@mui/icons-material';
 
+import Web3 from "web3";
+import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
+
+let web3;
+let contract;
+
+if (typeof window !== "undefined" && window.ethereum) {
+  web3 = new Web3(window.ethereum);
+  contract = new web3.eth.Contract(ABI.MEDICAL_RECORDS_MANAGER, CONTRACT_ADDRESSES.MEDICAL_RECORDS_MANAGER);
+}
+
 export default function Dashboard() {
   const { logout } = useAuth();
   const [permissionStatus, setPermissionStatus] = useState({});
@@ -12,24 +23,121 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   const fetchDoctors = async () => {
-    setDoctors([
-      { id: 1, name: 'Dr. John Doe', specialty: 'Cardiologist' },
-      { id: 2, name: 'Dr. Jane Smith', specialty: 'Neurologist' },
-      { id: 3, name: 'Dr. Emily Johnson', specialty: 'Pediatrician' },
-    ]);
-    setLoading(false);
+    try {
+      setLoading(true); // Assuming you have a loading state
+      const provider = new Web3(window.ethereum);
+  
+      // Initialize contracts
+      const doctorContract = new provider.eth.Contract(
+        ABI.DOCTOR_REGISTRY,
+        CONTRACT_ADDRESSES.DOCTOR_REGISTRY
+      );
+  
+      // Fetch all registered doctor addresses
+      const doctorAddresses = await doctorContract.methods.getAllRegisteredDoctors().call();
+      console.log(doctorAddresses)
+      // Fetch profile for each doctor
+      const doctorsData = await Promise.all(
+        doctorAddresses.map(async (address) => {
+          const doctorProfile = await doctorContract.methods.getDoctorProfile(address).call();
+          return {
+            address,
+            ...doctorProfile,
+          };
+        })
+      );
+  
+      setDoctors(doctorsData); // Update state with fetched data
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching doctors:", error);
+      setLoading(false);
+    }
   };
+  
+
+  const grantDoctorAccess = async (doctorAddress) => {
+    try {
+      const accounts = await web3.eth.getAccounts(); // Get connected wallet address
+      const fromAddress = accounts[0]; // Use the first account
+  
+      await contract.methods.grantDoctorAccess(doctorAddress).send({ from: fromAddress });
+  
+      console.log(`Access granted to doctor: ${doctorAddress}`);
+    } catch (error) {
+      console.error("Error granting access:", error);
+    }
+  };
+  
+  const revokeDoctorAccess = async (doctorAddress) => {
+    try {
+      const accounts = await web3.eth.getAccounts(); // Get connected wallet address
+      const fromAddress = accounts[0]; // Use the first account
+  
+      await contract.methods.revokeDoctorAccess(doctorAddress).send({ from: fromAddress });
+  
+      console.log(`Access revoked from doctor: ${doctorAddress}`);
+    } catch (error) {
+      console.error("Error revoking access:", error);
+    }
+  };
+  
+  const handleTogglePermission = async (doctorId) => {
+    const doctor = doctors.find((doc) => doc.address === doctorId);
+    if (!doctor) return;
+  
+    const isGranted = permissionStatus[doctorId] || false;
+  
+    try {
+      if (!isGranted) {
+        // Grant access to the doctor
+        await grantDoctorAccess(doctor.address);
+      } else {
+        // Revoke access from the doctor
+        await revokeDoctorAccess(doctor.address);
+      }
+  
+      setPermissionStatus((prevStatus) => {
+        const newStatus = { ...prevStatus, [doctorId]: !prevStatus[doctorId] };
+        console.log('Updated permissionStatus:', newStatus); // Log the updated status
+        return newStatus;
+      });
+    } catch (error) {
+      console.error("Error toggling permission:", error);
+      alert("Failed to toggle permission. Please try again.");
+    }
+  };
+  
+
+  const checkDoctorAccess = async (doctorAddress) => {
+    try {
+      const accounts = await web3.eth.getAccounts();
+      const fromAddress = accounts[0];
+  
+      const isGranted = await contract.methods.checkDoctorAccess(fromAddress, doctorAddress).call();
+      setPermissionStatus(prevState => {
+        const updatedStatus = { ...prevState, [doctorAddress]: isGranted };
+        console.log(`Access status for doctor ${doctorAddress}: ${isGranted}`); // Log permission status for each doctor
+        return updatedStatus;
+      });
+    } catch (error) {
+      console.error("Error checking doctor access:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (doctors.length > 0) {
+      doctors.forEach((doctor) => {
+        checkDoctorAccess(doctor.address); // Check access status for each doctor
+      });
+    }
+  }, [doctors]);
 
   useEffect(() => {
     fetchDoctors();
   }, []);
 
-  const handleTogglePermission = (doctorId: number) => {
-    setPermissionStatus((prevStatus: any) => ({
-      ...prevStatus,
-      [doctorId]: !prevStatus[doctorId],
-    }));
-  };
+
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: '"Poppins", sans-serif' }}>
@@ -156,8 +264,8 @@ export default function Dashboard() {
                           Permission
                         </Typography>
                         <Switch
-                          checked={permissionStatus[doctor.id] || false}
-                          onChange={() => handleTogglePermission(doctor.id)}
+                          checked={permissionStatus[doctor.address] || false}
+                          onChange={() => handleTogglePermission(doctor.address)}
                           inputProps={{ 'aria-label': 'controlled' }}
                           sx={{
                             '& .MuiSwitch-switchBase.Mui-checked': {
