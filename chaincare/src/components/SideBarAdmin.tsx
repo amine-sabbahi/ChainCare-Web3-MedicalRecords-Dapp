@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, LogOut, ChevronLeft, ChevronRight, Users, Stethoscope, LayoutDashboard } from 'lucide-react';
+import { Home, LogOut, ChevronLeft, ChevronRight, Users, Stethoscope, LayoutDashboard ,FileText} from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image/';
@@ -21,6 +21,9 @@ const SideBarAdmin = ({children}) => {
     {icon: <LayoutDashboard className="w-5 h-5"/>, label: 'Admin Dashboard', href: '/admin'},
     {icon: <Users className="w-5 h-5"/>, label: 'Patients', href: '/admin/createPatient'},
     {icon: <Stethoscope className="w-5 h-5"/>, label: 'Doctors', href: '/admin/createDoctor'},
+    {icon: <Users className="w-5 h-5"/>, label: 'Admins', href: '/admin/alladmins'},
+    {icon: <FileText className="w-5 h-5"/>, label: 'Historique', href: '/admin/historique_Admin'},
+
   ];
 
   return (

@@ -7,6 +7,8 @@ import { useAuth } from '@/context/AuthContext';
 import { Button, Container, Grid, Card, Typography, Box ,} from '@mui/material';
 import { Person, Email, Phone, Wc, Cake ,ExitToApp } from '@mui/icons-material';
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
+import Sidebar from '@/components/sideBarPatient';
+
 import Web3 from 'web3';
 
 
@@ -75,7 +77,8 @@ export default function Dashboard() {
           patientInfo.phoneNumber
         )
         .send({ from: patientAddress });
-  
+
+      
       // Notify the user that the profile was updated successfully
       alert("Profile updated successfully!");
       setIsEditing(false); // Close the editing mode
@@ -102,313 +105,141 @@ export default function Dashboard() {
   
 
   return (
-    <div className="bg-pastel-100 min-h-screen">
-      <header className="bg-pastel-600 p-4 shadow-md">
-        <Typography
-          variant="h4"
-          align="center"
-          className="font-semibold"
-          sx={{ color: '#a8d5e2' }} // Pastel color
-        >
-          Patient Dashboard
-        </Typography>
-        <Button
-          variant="outlined"
-          sx={{
-            position: 'absolute',
-            top: 16,
-            right: 16,
-          }}
-          onClick={logout}  // Logout action
-        >
-          <ExitToApp sx={{ mr: 1 }} /> Logout
-        </Button>
-      </header>
-
-      <Container maxWidth="lg" sx={{ mt: 6 }}>
-      <Container maxWidth="md" sx={{ mt: 6 }}>
-      <section>
-  {loading ? (
-    <Typography variant="h6" align="center">
-      Loading patient data...
-    </Typography>
-  ) : (
-    <Card
+    <Box
+      className="bg-gradient-to-r from-pastel-100 to-pastel-200 min-h-screen"
       sx={{
-        p: 4,
-        borderRadius: '16px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-        backgroundColor: '#ffffff',
-        position: 'relative',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '20px',
       }}
     >
-      <Typography variant="h5" align="center" className="font-bold" sx={{ mb: 2 }}>
-        Patient Information
-      </Typography>
-      {!isEditing ? (
-        <>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Person sx={{ color: '#86c5d8' }} />
-              <Typography variant="body1">
-                <strong>Name:</strong> {patientInfo.name}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Cake sx={{ color: '#fad6a5' }} />
-              <Typography variant="body1">
-                <strong>Age:</strong> {patientInfo.age}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Wc sx={{ color: '#f5b6c4' }} />
-              <Typography variant="body1">
-                <strong>Gender:</strong> {patientInfo.gender}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Email sx={{ color: '#a8d5e2' }} />
-              <Typography variant="body1">
-                <strong>Email:</strong> {patientInfo.email}
-              </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Phone sx={{ color: '#e6f3ec' }} />
-              <Typography variant="body1">
-                <strong>Phone:</strong> {patientInfo.phoneNumber}
-              </Typography>
-            </Box>
-          </Box>
-          <Button
-            variant="outlined"
-            sx={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-            }}
-            onClick={() => setIsEditing(true)}
-          >
-            Edit
-          </Button>
-        </>
-      ) : (
-        <Box
-          component="form"
-          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          onSubmit={async (e) => {
-            e.preventDefault();
-            try {
-              await updatePatientInfo(patientInfo); // Update info on blockchain
-              setIsEditing(false); // Close edit mode after successful save
-            } catch (error) {
-              console.error('Error updating patient info:', error);
-            }
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Person sx={{ color: '#86c5d8' }} />
-            <input
-              type="text"
-              placeholder="Name"
-              value={patientInfo.name}
-              onChange={(e) => setPatientInfo({ ...patientInfo, name: e.target.value })}
-              style={{
-                flex: 1,
-                padding: '8px',
-                borderRadius: '8px',
-                border: '1px solid #ccc',
-              }}
-            />
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Cake sx={{ color: '#fad6a5' }} />
-            <input
-              type="number"
-              placeholder="Age"
-              value={patientInfo.age}
-              onChange={(e) => setPatientInfo({ ...patientInfo, age: e.target.value })}
-              style={{
-                flex: 1,
-                padding: '8px',
-                borderRadius: '8px',
-                border: '1px solid #ccc',
-              }}
-            />
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Wc sx={{ color: '#f5b6c4' }} />
-            <select
-              value={patientInfo.gender}
-              onChange={(e) => setPatientInfo({ ...patientInfo, gender: e.target.value })}
-              style={{
-                flex: 1,
-                padding: '8px',
-                borderRadius: '8px',
-                border: '1px solid #ccc',
-              }}
-            >
-              <option value="">Select Gender</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-              <option value="Other">Other</option>
-            </select>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Email sx={{ color: '#a8d5e2' }} />
-            <input
-              type="email"
-              placeholder="Email"
-              value={patientInfo.email}
-              onChange={(e) => setPatientInfo({ ...patientInfo, email: e.target.value })}
-              style={{
-                flex: 1,
-                padding: '8px',
-                borderRadius: '8px',
-                border: '1px solid #ccc',
-              }}
-            />
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Phone sx={{ color: '#e6f3ec' }} />
-            <input
-              type="text"
-              placeholder="Phone"
-              value={patientInfo.phoneNumber}
-              onChange={(e) => setPatientInfo({ ...patientInfo, phoneNumber: e.target.value })}
-              style={{
-                flex: 1,
-                padding: '8px',
-                borderRadius: '8px',
-                border: '1px solid #ccc',
-              }}
-            />
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-            <Button variant="outlined" onClick={() => setIsEditing(false)}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="contained"
-              sx={{
-                backgroundColor: '#a8d5e2',
-                ':hover': { backgroundColor: '#86c5d8' },
-              }}
-            >
-              Save
-            </Button>
-          </Box>
-        </Box>
-      )}
-    </Card>
-  )}
-</section>
-
-      </Container>
-
-        <section>
-          <Typography
-            variant="h6"
-            sx={{ mt: 6 }}
-            className="text-pastel-800 font-semibold"
-          >
-            Quick Actions
-          </Typography>
-          <Grid container spacing={4} sx={{ mt: 3 }}>
-            {/* Card for medical records */}
-            <Grid item xs={12} sm={4}>
-              <Card
+      <Grid container sx={{ justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+        <Grid item xs={12} md={3}>
+          <Sidebar />
+        </Grid>
+        <Grid item xs={12} md={9}>
+          <Container maxWidth="lg" sx={{ mt: 6 }}>
+            <section>
+              {loading ? (
+                <Typography variant="h6" align="center" sx={{ color: '#333' }}>
+                  Loading patient data...
+                </Typography>
+              ) : (
+                <Card
                 sx={{
-                  p: 3,
-                  borderRadius: '16px',
-                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: '#fdf4e3',
+                  p: 14, // Increased padding for a larger card
+                  borderRadius: '20px', // Slightly rounded border for elegance
+                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)', // Deeper shadow for better contrast
+                  backgroundColor: '#ffffff', // Light background
+                  width: '110%',
+                  maxWidth: '5000px', // Increased max-width for a bigger card
+                  border: '2px solid #333', // Stronger border with dark color
+                  fontFamily: '"Roboto", "Arial", sans-serif', // Classy and modern font family
                 }}
-              >
-                <Typography variant="h6" className="text-pastel-800">
-                  My Medical Records
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  View and download your medical records.
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    mt: 2,
-                    backgroundColor: '#a8d5e2',
-                    ':hover': { backgroundColor: '#86c5d8' },
-                  }}
-                  href="/patient/records"
                 >
-                  View
-                </Button>
-              </Card>
-            </Grid>
-            {/* Card for managing permissions */}
-            <Grid item xs={12} sm={4}>
-              <Card
-                sx={{
-                  p: 3,
-                  borderRadius: '16px',
-                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: '#e6f3ec',
-                }}
-              >
-                <Typography variant="h6" className="text-pastel-800">
-                  Manage Permissions
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Grant or revoke access to your records.
-                </Typography>
+                  <Typography variant="h5" align="center" sx={{ fontWeight: '700', color: '#333', mb: 3 }}>
+                    Patient Information
+                  </Typography>
+                  {!isEditing ? (
+                    <>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {[{ label: 'Name', value: patientInfo.name, icon: <Person sx={{ color: '#86c5d8' }} /> },
+                          { label: 'Age', value: patientInfo.age, icon: <Cake sx={{ color: '#fad6a5' }} /> },
+                          { label: 'Gender', value: patientInfo.gender, icon: <Wc sx={{ color: '#f5b6c4' }} /> },
+                          { label: 'Email', value: patientInfo.email, icon: <Email sx={{ color: '#a8d5e2' }} /> },
+                          { label: 'Phone', value: patientInfo.phoneNumber, icon: <Phone sx={{ color: '#e6f3ec' }} /> }]
+                          .map(({ label, value, icon }, index) => (
+                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                              {icon}
+                              <Typography variant="body1" sx={{ color: '#333', fontWeight: '500' }}>
+                                <strong>{label}:</strong> {value}
+                              </Typography>
+                            </Box>
+                          ))}
+                      </Box>
+                      <Button
+                        variant="outlined"
+                        sx={{
+                          mt: 3,
+                          alignSelf: 'flex-start',
+                          color: '#333',
+                          borderColor: '#333',
+                          '&:hover': {
+                            backgroundColor: '#333',
+                            borderColor: '#333',
+                            color: '#ffffff',
+                          },
+                        }}
+                        onClick={() => setIsEditing(true)}
+                      >
+                        Edit
+                      </Button>
+                    </>
+                  ) : (
+                    <Box
+                      component="form"
+                      sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        try {
+                          await updatePatientInfo();
+                          setIsEditing(false);
+                        } catch (error) {
+                          console.error('Error updating patient info:', error);
+                        }
+                      }}
+                    >
+                      <Typography variant="h6" align="center" sx={{ mb: 3, fontWeight: '700', color: '#333' }}>
+                        Edit Patient Information
+                      </Typography>
+                      {[{ label: 'Name', value: patientInfo.name, icon: <Person sx={{ color: '#86c5d8' }} /> },
+                        { label: 'Age', value: patientInfo.age, icon: <Cake sx={{ color: '#fad6a5' }} /> },
+                        { label: 'Gender', value: patientInfo.gender, icon: <Wc sx={{ color: '#f5b6c4' }} /> },
+                        { label: 'Email', value: patientInfo.email, icon: <Email sx={{ color: '#a8d5e2' }} /> },
+                        { label: 'Phone', value: patientInfo.phoneNumber, icon: <Phone sx={{ color: '#e6f3ec' }} /> }]
+                        .map(({ label, value, icon }, index) => (
+                          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {icon}
+                            <input
+                              type={label === 'Age' ? 'number' : 'text'}
+                              placeholder={label}
+                              value={value}
+                              onChange={(e) => setPatientInfo({ ...patientInfo, [label.toLowerCase()]: e.target.value })}
+                              style={{
+                                flex: 1,
+                                padding: '12px',
+                                borderRadius: '8px',
+                                border: '1px solid #ccc',
+                                backgroundColor: '#f9f9f9',
+                                fontFamily: '"Roboto", "Arial", sans-serif',
+                              }}
+                            />
+                          </Box>
+                        ))}
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
+                        <Button variant="outlined" onClick={() => setIsEditing(false)}>
+                          Cancel
+                        </Button>
                         <Button
-                  variant="contained"
-                  sx={{
-                    mt: 2,
-                    backgroundColor: '#f5b6c4',
-                    ':hover': { backgroundColor: '#e298a5' },
-                  }}
-                  href="/patient/ManagePermissions"
-                >
-                  Manage
-                </Button>
-              </Card>
-            </Grid>
-            {/* Card for action history */}
-            <Grid item xs={12} sm={4}>
-              <Card
-                sx={{
-                  p: 3,
-                  borderRadius: '16px',
-                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: '#fcefee',
-                }}
-              >
-                <Typography variant="h6" className="text-pastel-800">
-                  History
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Check your action history on medical records.
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    mt: 2,
-                    backgroundColor: '#fad6a5',
-                    ':hover': { backgroundColor: '#f7c68a' },
-                  }}
-                  href="/dashboard/audit"
-                >
-                  View History
-                </Button>
-              </Card>
-            </Grid>
-          </Grid>
-        </section>
-      </Container>
-
-      <footer className="bg-pastel-700 text-purple p-4 mt-6 text-center shadow-md">
-        <p>&copy; 2024 Medical Records with Blockchain</p>
-      </footer>
-    </div>
+                          type="submit"
+                          variant="contained"
+                          sx={{
+                            backgroundColor: '#a8d5e2',
+                            ':hover': { backgroundColor: '#86c5d8' },
+                          }}
+                        >
+                          Save
+                        </Button>
+                      </Box>
+                    </Box>
+                  )}
+                </Card>
+              )}
+            </section>
+          </Container>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }

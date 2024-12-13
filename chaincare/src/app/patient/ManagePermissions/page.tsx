@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button, Container, Grid, Card, Typography, Box, List, ListItem, ListItemText, Switch } from '@mui/material';
 import { Person, ExitToApp, History, MedicalServices, Security } from '@mui/icons-material';
+import Sidebar from '@/components/sideBarPatient';
 
 import Web3 from "web3";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
@@ -19,6 +20,7 @@ if (typeof window !== "undefined" && window.ethereum) {
 export default function Dashboard() {
   const { logout } = useAuth();
   const [permissionStatus, setPermissionStatus] = useState({});
+  const [transactions, setTransactions] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -97,16 +99,38 @@ export default function Dashboard() {
         await revokeDoctorAccess(doctor.address);
       }
   
+      // Update permission status
       setPermissionStatus((prevStatus) => {
         const newStatus = { ...prevStatus, [doctorId]: !prevStatus[doctorId] };
-        console.log('Updated permissionStatus:', newStatus); // Log the updated status
+        console.log('Updated permissionStatus:', newStatus);
         return newStatus;
       });
+  
+      // Log the transaction
+      const action = !isGranted ? "Permission Granted" : "Permission Revoked";
+      const timestamp = new Date().toLocaleString();
+  
+      setTransactions((prevTransactions) => {
+        const newTransaction = {
+          id: prevTransactions.length + 1,
+          doctorName: doctor.name, // Ensure 'doctor' object is available
+          action,
+          timestamp,
+        };
+
+      console.log("New transaction logged:", newTransaction); 
+      return [...prevTransactions, newTransaction];
+    });
+
+  
     } catch (error) {
       console.error("Error toggling permission:", error);
       alert("Failed to toggle permission. Please try again.");
     }
   };
+
+
+  
   
 
   const checkDoctorAccess = async (doctorAddress) => {
@@ -138,129 +162,93 @@ export default function Dashboard() {
   }, []);
 
 
-
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '"Poppins", sans-serif' }}>
+    <div style={{ display: 'flex', height: '100vh', fontFamily: '"Poppins", sans-serif', backgroundColor: '#f4f7fa' }}>
       {/* Sidebar */}
-      <aside
-        style={{
-          width: '280px',
-          backgroundColor: '#FAF3F3',
-          padding: '30px',
-          borderRight: '1px solid #E0E0E0',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-          borderRadius: '10px',
-        }}
-      >
-        <Typography
-          variant="h5"
-          align="center"
-          sx={{ mb: 4, fontWeight: '600', color: '#89CFF0', letterSpacing: '1px' }}
-        >
-          Patient Dashboard
-        </Typography>
-        <List>
-          {[
-            { icon: <Person />, text: 'Dashboard' },
-            { icon: <Security />, text: 'Manage Permissions' },
-            { icon: <History />, text: 'History' },
-            { icon: <MedicalServices />, text: 'Doctors' },
-          ].map(({ icon, text }) => (
-            <ListItem button key={text} sx={{ mb: 2, borderRadius: '8px', '&:hover': { backgroundColor: '#F0F8FF' } }}>
-              <Box sx={{ color: '#89CFF0', mr: 2 }}>{icon}</Box>
-              <ListItemText primary={text} sx={{ fontWeight: '500', color: '#555' }} />
-            </ListItem>
-          ))}
-        </List>
-      </aside>
-
+      <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
+        <Sidebar />
+      </Grid>
+      
       {/* Main Content */}
-      <main style={{ flex: 1, padding: '20px', backgroundColor: '#F9F9F9' }}>
-        {/* Header */}
-        <header
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: '#89CFF0',
-            color: 'white',
-            padding: '10px 20px',
-            borderRadius: '12px',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
-          }}
-        >
-          <Typography variant="h4" sx={{ fontWeight: '600', letterSpacing: '1px' }}>
-            Patient Dashboard
-          </Typography>
-          <Button
-            variant="outlined"
-            color="inherit"
-            onClick={logout}
-            sx={{
-              borderRadius: '50px',
-              padding: '6px 16px',
-              borderColor: 'white',
-              '&:hover': {
-                backgroundColor: 'white',
-                color: '#89CFF0',
-              },
-            }}
-          >
-            <ExitToApp sx={{ mr: 1 }} /> Logout
-          </Button>
-        </header>
-
+      <main style={{ flex: 1, padding: '40px', backgroundColor: '#FAFAFA' }}>
         {/* Dashboard Content */}
         <Container sx={{ mt: 6 }}>
           <Typography
             variant="h5"
-            sx={{ mb: 4, fontWeight: '600', color: '#333', letterSpacing: '0.5px' }}
+            sx={{
+              mb: 4,
+              fontWeight: '700',
+              color: '#333',
+              letterSpacing: '0.5px',
+              fontSize: '1.8rem',
+              textTransform: 'uppercase',
+              textAlign: 'center',
+            }}
           >
             Doctors List & Permissions
           </Typography>
+          
           <Card
             sx={{
-              padding: '20px',
+              padding: '50px',
               backgroundColor: '#FFFFFF',
               borderRadius: '16px',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
-              border: '1px solid #E0E0E0',
+              boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)',
+              maxWidth: '6000px',
+              border: '1px solidrgb(46, 167, 207)',
+              transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease',
+              '&:hover': {
+                transform: 'scale(1.02)',
+                boxShadow: '0 12px 24px rgba(0, 0, 0, 0.15)',
+              },
             }}
           >
-            <Typography variant="h6" sx={{ mb: 2, color: '#89CFF0', fontWeight: '600' }}>
+            <Typography variant="h6" sx={{ mb: 2, color: '#333', fontWeight: '600' }}>
               Manage Doctor Permissions
             </Typography>
-
+  
             {loading ? (
-              <Typography variant="body1">Loading doctor data...</Typography>
+              <Typography variant="body1" sx={{ color: '#888', fontSize: '1rem', textAlign: 'center' }}>
+                Loading doctor data...
+              </Typography>
             ) : (
               <Grid container spacing={4}>
                 {doctors.map((doctor) => (
-                  <Grid item xs={12} sm={6} md={4} key={doctor.id}>
+                  <Grid item xs={12} sm={6} md={4} key={doctor.id}> {/* Add unique key */}
                     <Card
                       sx={{
                         padding: '20px',
-                        backgroundColor: '#FDFDFD',
+                        backgroundColor: '#F9F9F9',
                         borderRadius: '12px',
-                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-                        '&:hover': { boxShadow: '0 6px 12px rgba(0, 0, 0, 0.1)' },
+                        border: '2px solid #E0E0E0',
+                        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                        transition: 'box-shadow 0.3s ease-in-out',
+                        '&:hover': {
+                          boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+                        },
                       }}
                     >
-                      <Typography variant="h6" sx={{ color: '#89CFF0', fontWeight: '500' }}>
+                      <Typography variant="h6" sx={{ color: '#333', fontWeight: '500', fontSize: '1.1rem' }}>
                         {doctor.name}
                       </Typography>
-                      <Typography variant="body1" sx={{ color: '#555' }}>
-                        {doctor.specialty}
+                      <Typography variant="body2" sx={{ color: '#666', fontWeight: '400', fontSize: '0.95rem' }}>
+                        {doctor.specialization}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#666', fontWeight: '400', fontSize: '0.95rem' }}>
+                        {doctor.phoneNumber}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#666', fontWeight: '400', fontSize: '0.95rem' }}>
+                        {doctor.email}
                       </Typography>
                       <Box
                         sx={{
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
-                          marginTop: '10px',
+                          marginTop: '15px',
                         }}
                       >
-                        <Typography variant="body2" sx={{ color: '#888' }}>
+                        <Typography variant="body2" sx={{ color: '#888', fontSize: '0.85rem' }}>
                           Permission
                         </Typography>
                         <Switch
@@ -269,7 +257,7 @@ export default function Dashboard() {
                           inputProps={{ 'aria-label': 'controlled' }}
                           sx={{
                             '& .MuiSwitch-switchBase.Mui-checked': {
-                              color: '#89CFF0',
+                              color: '#3F51B5',
                             },
                             '& .MuiSwitch-track': {
                               backgroundColor: '#E0E0E0',
@@ -287,4 +275,4 @@ export default function Dashboard() {
       </main>
     </div>
   );
-}
+}  
