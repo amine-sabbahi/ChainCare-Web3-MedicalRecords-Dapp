@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, LogOut, ChevronLeft, ChevronRight, Users, Stethoscope, LayoutDashboard, User } from 'lucide-react';
+import { LogOut, ChevronLeft, ChevronRight, User, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image/';
@@ -18,6 +18,7 @@ const SideBarAdmin = ({children}) => {
 
   // Navigation items with icons and labels
   const navigationItems = [
+    {icon: <LayoutDashboard className="w-5 h-5"/>, label: 'Dashboard', href: '/doctor'},
     {icon: <User className="w-5 h-5"/>, label: 'Patients', href: '/doctor/view_patients'},
   ];
 
@@ -59,7 +60,7 @@ const SideBarAdmin = ({children}) => {
         </button>
 
         {/* Logo Area */}
-        <div className="p-4 border-b border-gray-700 flex items-center justify-center bg-white">
+        <div className="p-4 border-b border-[#34495e] flex items-center justify-center">
           <div
             className={`
               transition-all 
@@ -136,7 +137,7 @@ const SideBarAdmin = ({children}) => {
             className="
               flex items-center
               px-4 py-3
-              hover:bg-red-600
+              hover:bg-gray-600
               text-gray-300
               transition-all
               duration-300
