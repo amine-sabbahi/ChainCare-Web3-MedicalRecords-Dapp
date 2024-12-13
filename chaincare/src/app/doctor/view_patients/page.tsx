@@ -126,7 +126,7 @@ export default function DoctorDashboard() {
                 color: '#89CFF0',
               },
             }}
-          >
+          >getPatientsWithAccess
             <ExitToApp sx={{ mr: 1 }} /> Logout
           </Button>
         </header>

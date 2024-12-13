@@ -19,7 +19,7 @@ contract MedicalRecordsAccessControl {
 
     // Predefined admin addresses
     address[3] private INITIAL_ADMINS = [
-        0x1F02A0d95E047E2C7e82e97751B608481390e4Be,
+        0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,
         0xe1e55081c8CB97E6E64f2DBF033D286141f90026,
         0xBDc51b1463cAf8C8e24619E0dC0D7AA471d90c22
     ];
@@ -346,13 +346,15 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
         uint timestamp;
         bool isActive;
     }
+    address[] public registeredPatientAddresses;
+    mapping(address => mapping(address => bool)) public patientDoctorAccess;
+
 
     mapping(bytes32 => MedicalRecord) public medicalRecords;
     mapping(address => bytes32[]) public patientRecords;
     mapping(address => bytes32[]) public doctorRecords;
 
-    // Access Control Mapping
-    mapping(address => mapping(address => bool)) public patientDoctorAccess;
+
 
     event MedicalRecordAdded(
         bytes32 indexed recordId, 
@@ -444,13 +446,13 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
         emit MedicalRecordDeleted(_recordId);
     }
 
-    function grantDoctorAccess(address _doctor) external onlyRegisteredPatient {
-        require(registeredDoctors[_doctor], "Doctor must be registered");
+    function grantDoctorAccess(address _doctor) public {
         patientDoctorAccess[msg.sender][_doctor] = true;
         emit DoctorAccessGranted(msg.sender, _doctor);
     }
 
-    function revokeDoctorAccess(address _doctor) external onlyRegisteredPatient {
+
+    function revokeDoctorAccess(address _doctor) public  {
         patientDoctorAccess[msg.sender][_doctor] = false;
         emit DoctorAccessRevoked(msg.sender, _doctor);
     }
@@ -486,6 +488,27 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
     {
         return patientDoctorAccess[_patient][_doctor];
     }
+    // Function for doctors to see which patients have granted them access
+    function getPatientsWithAccess(address _doctor) external view returns (address[] memory) {
+    address[] memory patientsWithAccess = new address[](registeredPatientAddresses.length);
+    uint count = 0;
+
+    for (uint i = 0; i < registeredPatientAddresses.length; i++) {
+        address patient = registeredPatientAddresses[i];
+        if (patientDoctorAccess[patient][_doctor]) {
+            patientsWithAccess[count] = patient;
+            count++;
+        }
+    }
+
+    // Resize the array to return only valid patients
+    assembly {
+        mstore(patientsWithAccess, count)
+    }
+    return patientsWithAccess;
+    }
+
+
 }
 
 // Audit Trail Contract
