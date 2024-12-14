@@ -21,7 +21,7 @@ const SideBarAdmin = ({children}) => {
     {icon: <LayoutDashboard className="w-5 h-5"/>, label: 'Admin Dashboard', href: '/admin'},
     {icon: <Users className="w-5 h-5"/>, label: 'Patients', href: '/admin/createPatient'},
     {icon: <Stethoscope className="w-5 h-5"/>, label: 'Doctors', href: '/admin/createDoctor'},
-    {icon: <Users className="w-5 h-5"/>, label: 'Admins', href: '/admin/alladmins'},
+    {icon: <Users className="w-5 h-5"/>, label: 'Admins', href: '/admin/createAdmin'},
     {icon: <FileText className="w-5 h-5"/>, label: 'Historique', href: '/admin/historique_Admin'},
 
   ];

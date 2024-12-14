@@ -1,4 +1,3 @@
-// admin/page.tsx
 "use client";
 import React, { useState, useEffect } from 'react';
 import { 
@@ -27,6 +26,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalPatients: 0,
     totalDoctors: 0,
+    totalAdmins: 0, // Add state for admins
     totalMedicalRecords: 0,
     recentRegistrations: []
   });
@@ -56,21 +56,39 @@ export default function AdminDashboard() {
         );
         const doctorAddresses = await doctorContract.methods.getAllRegisteredDoctors().call();
 
-        // Medical Records Contract
+        // Admins Registry Contract
         const medicalRecordsContract = new provider.eth.Contract(
-          ABI.MEDICAL_RECORDS_MANAGER, 
-          CONTRACT_ADDRESSES.MEDICAL_RECORDS_MANAGER
+          ABI.MEDICAL_ACCESS_CONTROL, 
+          CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL
         );
+        const rawResult = await medicalRecordsContract.methods.getAllAdminsDetails().call();
+
+        let adminAddresses, adminDetails;
+        
+        // Ensure the structure of rawResult matches the expected format
+        if (Array.isArray(rawResult)) {
+          [adminAddresses, adminDetails] = rawResult;
+        } else if (typeof rawResult === 'object') {
+          adminAddresses = rawResult[0] || [];
+          adminDetails = rawResult[1] || [];
+        } else {
+          throw new Error('Unexpected return type from getAllAdminsDetails');
+        }
+
+        // Calculate admin count
+        const adminCount = adminAddresses.length;
 
         // Prepare registration trend data
         const registrationData = [
           { name: 'Patients', count: patientAddresses.length },
-          { name: 'Doctors', count: doctorAddresses.length }
+          { name: 'Doctors', count: doctorAddresses.length },
+          { name: 'Admins', count: adminCount }
         ];
 
         setStats({
           totalPatients: patientAddresses.length,
           totalDoctors: doctorAddresses.length,
+          totalAdmins: adminCount,
           totalMedicalRecords: 0, // You might want to implement this method in your contract
           recentRegistrations: registrationData
         });
@@ -98,7 +116,7 @@ export default function AdminDashboard() {
         <h1 className="text-4xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
         
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {/* Total Patients Card */}
           <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between">
@@ -118,6 +136,17 @@ export default function AdminDashboard() {
                 <p className="text-3xl font-bold text-green-600">{stats.totalDoctors}</p>
               </div>
               <Stethoscope className="text-green-500" size={48} />
+            </div>
+          </div>
+
+          {/* Total Admins Card */}
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-gray-500 text-sm uppercase">Total Admins</h3>
+                <p className="text-3xl font-bold text-yellow-600">{stats.totalAdmins}</p>
+              </div>
+              <Activity className="text-yellow-500" size={48} />
             </div>
           </div>
 
@@ -162,7 +191,9 @@ export default function AdminDashboard() {
                   <div className="flex items-center space-x-4">
                     {reg.name === 'Patients' ? 
                       <Users className="text-blue-500" /> : 
-                      <Stethoscope className="text-green-500" />
+                      reg.name === 'Doctors' ? 
+                      <Stethoscope className="text-green-500" /> :
+                      <Activity className="text-yellow-500" />
                     }
                     <span className="font-medium">{reg.name}</span>
                   </div>
