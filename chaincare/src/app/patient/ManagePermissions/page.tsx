@@ -61,8 +61,11 @@ export default function Dashboard() {
     try {
       const accounts = await web3.eth.getAccounts(); // Get connected wallet address
       const fromAddress = accounts[0]; // Use the first account
-  
+      console.log("hiiiiiii")
+
       await contract.methods.grantDoctorAccess(doctorAddress).send({ from: fromAddress });
+      console.log("hiiiiiii")
+
   
       console.log(`Access granted to doctor: ${doctorAddress}`);
     } catch (error) {
@@ -86,7 +89,6 @@ export default function Dashboard() {
   const handleTogglePermission = async (doctorId) => {
     const doctor = doctors.find((doc) => doc.address === doctorId);
     if (!doctor) return;
-  
     const isGranted = permissionStatus[doctorId] || false;
   
     try {

@@ -78,7 +78,7 @@ contract MedicalRecordsAccessControl {
         require(_newAdmin != address(0), "Invalid admin address");
 
         admins[_newAdmin] = true;
-        allAdmins.push(_newAdmin);
+        allAdmins.push(_newAdmin);  // Add the new admin address to the allAdmins array
         adminDetails[_newAdmin] = AdminDetails({
             fullName: _fullName,
             email: _email,
@@ -164,8 +164,6 @@ contract MedicalRecordsAccessControl {
         return registeredPatients[_address];
     }
 }
-
-
 // Patient Registry Contract
 contract PatientRegistry is MedicalRecordsAccessControl {
     struct Patient {
