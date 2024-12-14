@@ -19,6 +19,7 @@ export default function Dashboard() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+
   const listenForTransactionEvents = async () => {
     try {
       // Initialize web3 with the Ethereum provider
@@ -325,6 +326,133 @@ export default function Dashboard() {
     }
   };
   
+
+  const listenForDocuments = async () => {
+    try {
+      // Initialize web3 with the Ethereum provider
+      const provider = new Web3(window.ethereum);
+      const contract = new provider.eth.Contract(
+        ABI.DOCUMENT_STORAGE, 
+        CONTRACT_ADDRESSES.DOCUMENT_STORAGE
+      );
+  
+      // Listen to the DocumentUploaded event
+      contract.events.DocumentUploaded({ fromBlock: 'latest' })
+        .on('data', async (event) => {
+          try {
+            console.log("Received event doc:", event);
+  
+            // Extract event data
+            const { doctorAddress, patientAddress, fileLinks, timestamp } = event.returnValues;
+            const transactionHash = event.transactionHash;
+  
+            console.log("Transaction Hash doc:", transactionHash);
+  
+            // Fetch transaction and receipt details
+            const transactionDetails = await provider.eth.getTransaction(transactionHash);
+            const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
+  
+            // Convert timestamp (if needed)
+            const timestampInMilliseconds = Number(timestamp) * 1000;
+            const readableDate = new Date(timestampInMilliseconds);
+  
+            // Log human-readable date
+            console.log("Readable Date doc:", readableDate.toLocaleString());
+  
+            // Format the new transaction object
+            const newTransaction = {
+              type: "Document Uploaded", 
+              doctorAddress,
+              patientAddress,
+              fileLinks,
+              transactionHash,
+              value: transactionDetails.value, // Amount transferred (if any)
+              gasUsed: transactionReceipt.gasUsed, // Gas used
+              status: transactionReceipt.status ? "Success" : "Failed", // Transaction status
+              timestamp: readableDate.toLocaleString()  // Convert to readable format
+            };
+  
+            console.log("New Transaction:", newTransaction);
+  
+            // Update transaction state
+            setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
+          } catch (error) {
+            console.error("Error processing the event data:", error);
+          }
+        });
+  
+    } catch (error) {
+      console.error("Failed to initialize event listener:", error);
+    }
+  };
+
+  const fetchDocEvent = async () => {
+    try {
+      console.log("Fetching historical DocumentUploaded events...");
+  
+      const provider = new Web3(window.ethereum);
+      const contract = new provider.eth.Contract(
+        ABI.MEDICAL_RECORDS_MANAGER,
+        CONTRACT_ADDRESSES.MEDICAL_RECORDS_MANAGER
+      );
+  
+      // Fetch all "DocumentUploaded" events from the contract
+      const events = await contract.getPastEvents("DocumentUploaded", {
+        fromBlock: 0,  // Fetch from the first block (adjust if necessary)
+        toBlock: "latest"  // Up to the latest block
+      });
+  
+      console.log("Fetched events:", events);
+  
+      // Loop through events and process them
+      for (let event of events) {
+        try {
+          console.log("Processing event:", event);
+  
+          const { doctorAddress, patientAddress, fileLinks, timestamp } = event.returnValues;
+          const transactionHash = event.transactionHash;
+  
+          console.log("Transaction Hash:", transactionHash);
+  
+          // Fetch block details for timestamp
+          const blockDetails = await provider.eth.getBlock(event.blockNumber);
+          const blockTimestamp = blockDetails.timestamp; // in seconds
+  
+          // Convert the timestamp to a human-readable format
+          const timestampInMilliseconds = Number(blockTimestamp) * 1000;
+          const readableDate = new Date(timestampInMilliseconds);
+  
+          // Fetch additional transaction details
+          const transactionDetails = await provider.eth.getTransaction(transactionHash);
+          const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
+  
+          // Create a new transaction object
+          const newTransaction = {
+            type: "Document Uploaded",
+            doctorAddress,
+            patientAddress,
+            fileLinks,
+            transactionHash,
+            value: transactionDetails.value, // Amount transferred (if any)
+            gasUsed: transactionReceipt.gasUsed, // Gas used
+            status: transactionReceipt.status ? "Success" : "Failed", // Status
+            timestamp: readableDate.toLocaleString() // Readable timestamp
+          };
+  
+          console.log("Processed Transaction:", newTransaction);
+  
+          // Update the transactions state
+          setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
+        } catch (error) {
+          console.error("Error processing individual event:", error);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching historical events:", error);
+    }
+  };
+  
+  
   
   
   
@@ -336,6 +464,8 @@ export default function Dashboard() {
     listenForTransactionAccess();
     fetchHistoricalEvents();
     fetchHistoricalAccess();
+    listenForDocuments();
+    fetchDocEvent();
   }, []);
 
   return (
@@ -400,8 +530,10 @@ export default function Dashboard() {
                           : transaction.type === "Access Granted"
                             ? `${transaction.patient} granted access to ${transaction.doctor}`
                             : transaction.type === "Access Revoked"
-                            ? `${transaction.patient} revoked access from ${transaction.doctor}`
-                            : ""}
+                              ? `${transaction.patient} revoked access from ${transaction.doctor}`
+                              : transaction.type === "Document Uploaded" 
+                                ? `Uploaded document by ${transaction.doctorAddress} for ${transaction.patientAddress}}`
+                                : ""}
                       </TableCell>
                       <TableCell>{transaction.status}</TableCell>
                       <TableCell>{transaction.timestamp.toLocaleString()}</TableCell>

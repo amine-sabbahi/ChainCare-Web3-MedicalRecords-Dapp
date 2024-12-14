@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import ChaincareLogo from "../../public/img/Chaincare_verticale-logo.png";
 
-const SideBarPatient = ({ children }) => {
+const SideBarPatient = ({ }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [removedItems, setRemovedItems] = useState([]);
   const pathname = usePathname();
@@ -19,7 +19,7 @@ const SideBarPatient = ({ children }) => {
   // Navigation items with icons and labels
   const navigationItems = [
     { icon: <Users className="w-7 h-7" />, label: 'Profil', href: '/patient' },
-    { icon: <LayoutDashboard className="w-7 h-7" />, label: 'Consult Medical Records', href: '' },
+    { icon: <LayoutDashboard className="w-7 h-7" />, label: 'Consult Medical Records', href: '/patient/Records_patient' },
     { icon: <Users className="w-7 h-7" />, label: 'Manage Permissions', href: '/patient/ManagePermissions' },
     { icon: <Stethoscope className="w-7 h-7" />, label: 'Historique', href: '/patient/historique' },
   ];
