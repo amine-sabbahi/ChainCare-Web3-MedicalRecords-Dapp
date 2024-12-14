@@ -17,12 +17,19 @@ contract MedicalRecordsAccessControl {
     mapping(address => bool) public registeredDoctors;
     mapping(address => bool) public registeredPatients;
 
+    mapping(address => string[]) public adminEventHistory;
+    mapping(address => string[]) public doctorEventHistory;
+    mapping(address => string[]) public patientEventHistory;
+
     // Predefined admin addresses
     address[3] private INITIAL_ADMINS = [
         0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,
         0xe1e55081c8CB97E6E64f2DBF033D286141f90026,
         0x70997970C51812dc3A010C7d01b50e0d17dc79C8
     ];
+
+    // Array to store all admins
+    address[] public allAdmins;
 
     event AdminAdded(address indexed newAdmin, string name);
     event AdminRemoved(address indexed removedAdmin);
@@ -34,6 +41,7 @@ contract MedicalRecordsAccessControl {
         // Set initial admins during contract deployment
         for(uint i = 0; i < INITIAL_ADMINS.length; i++) {
             admins[INITIAL_ADMINS[i]] = true;
+            allAdmins.push(INITIAL_ADMINS[i]);
         }
         primaryAdmin = INITIAL_ADMINS[0]; // First admin is primary admin
     }
@@ -68,6 +76,7 @@ contract MedicalRecordsAccessControl {
         require(_newAdmin != address(0), "Invalid admin address");
 
         admins[_newAdmin] = true;
+        allAdmins.push(_newAdmin);  // Add the new admin address to the allAdmins array
         adminDetails[_newAdmin] = AdminDetails({
             fullName: _fullName,
             email: _email,
@@ -77,6 +86,7 @@ contract MedicalRecordsAccessControl {
         });
 
         emit AdminAdded(_newAdmin, _fullName);
+        adminEventHistory[_newAdmin].push("AdminAdded event triggered");
     }
 
     function updateAdminDetails(
@@ -93,6 +103,11 @@ contract MedicalRecordsAccessControl {
         adminInfo.phoneNumber = _phoneNumber;
 
         emit AdminDetailsUpdated(_adminAddress, _fullName);
+        adminEventHistory[_adminAddress].push("AdminDetailsUpdated event triggered");
+    }
+
+    function getAdminEventHistory(address _adminAddress) external view returns (string[] memory) {
+        return adminEventHistory[_adminAddress];
     }
 
     function removeAdmin(address _admin) external onlyPrimaryAdmin {
@@ -101,6 +116,15 @@ contract MedicalRecordsAccessControl {
 
         admins[_admin] = false;
         adminDetails[_admin].isActive = false;
+
+        // Remove admin from the allAdmins array
+        for (uint i = 0; i < allAdmins.length; i++) {
+            if (allAdmins[i] == _admin) {
+                allAdmins[i] = allAdmins[allAdmins.length - 1];
+                allAdmins.pop();
+                break;
+            }
+        }
 
         emit AdminRemoved(_admin);
     }
@@ -119,6 +143,15 @@ contract MedicalRecordsAccessControl {
         return adminDetails[_address];
     }
 
+    // Function to get all admins with their details
+    function getAllAdminsDetails() external view returns (AdminDetails[] memory) {
+        AdminDetails[] memory allAdminDetails = new AdminDetails[](allAdmins.length);
+        for (uint i = 0; i < allAdmins.length; i++) {
+            allAdminDetails[i] = adminDetails[allAdmins[i]];
+        }
+        return allAdminDetails;
+    }
+
     // Function to check if an address is a doctor
     function isDoctor(address _address) external view returns (bool) {
         return registeredDoctors[_address];
@@ -129,7 +162,6 @@ contract MedicalRecordsAccessControl {
         return registeredPatients[_address];
     }
 }
-
 // Patient Registry Contract
 contract PatientRegistry is MedicalRecordsAccessControl {
     struct Patient {

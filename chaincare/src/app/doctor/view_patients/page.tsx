@@ -60,18 +60,37 @@ export default function DoctorDashboard() {
       const web3Instance = initializeWeb3();
       if (!web3Instance) throw new Error('Web3 not initialized');
 
+      // Get the current doctor's address
+      const accounts = await web3Instance.web3.eth.getAccounts();
+      const doctorAddress = accounts[0];
+
       // Fetch all registered patients
       const patientAddresses = await web3Instance.patientRegistryContract.methods.getAllRegisteredPatients().call();
 
       // Check if the doctor has access to each patient's records
-      const patientsWithAccessProfil = await Promise.all(
+      const patientsWithAccessProfile = (await Promise.all(
         patientAddresses.map(async (address: string) => {
-          const patientProfile = await web3Instance.patientRegistryContract.methods.getPatientProfile(address).call();
-          return { patientProfile, address };
-        })
-      );
+          try {
+            const hasAccess = await web3Instance.medicalRecordsContract.methods
+              .checkDoctorAccess(address, doctorAddress)
+              .call();
 
-      setPatientsWithAccessProfil(patientsWithAccessProfil);
+            if (hasAccess) {
+              const patientProfile = await web3Instance.patientRegistryContract.methods
+                .getPatientProfile(address)
+                .call();
+
+              return { patientProfile, address };
+            }
+            return null;
+          } catch (error) {
+            console.error(`Error checking access for patient ${address}:`, error);
+            return null;
+          }
+        })
+      )).filter(patient => patient !== null);
+
+      setPatientsWithAccessProfil(patientsWithAccessProfile);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching patients with access:", error);
