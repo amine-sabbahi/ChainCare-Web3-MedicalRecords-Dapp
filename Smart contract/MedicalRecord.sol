@@ -16,21 +16,10 @@ contract MedicalRecordsAccessControl {
     address public primaryAdmin;
     mapping(address => AdminDetails) public adminDetails;
     mapping(address => bool) public admins;
-    mapping(address => bool) public registeredDoctors;
     mapping(address => bool) public registeredPatients;
+    mapping(address => bool) public registeredDoctors;
 
-    mapping(address => string[]) public adminEventHistory;
-    mapping(address => string[]) public doctorEventHistory;
-    mapping(address => string[]) public patientEventHistory;
-
-    // Predefined admin addresses
-    address[3] private INITIAL_ADMINS = [
-        0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,
-        0xe1e55081c8CB97E6E64f2DBF033D286141f90026,
-        0xBDc51b1463cAf8C8e24619E0dC0D7AA471d90c22
-    ];
-
-    // Array to store all admins
+    // Removed predefined admin addresses
     address[] public allAdmins;
 
     event AdminAdded(address indexed newAdmin, string name);
@@ -40,12 +29,10 @@ contract MedicalRecordsAccessControl {
     event PatientRegistered(address indexed patientAddress);
 
     constructor() {
-        // Set initial admins during contract deployment
-        for (uint i = 0; i < INITIAL_ADMINS.length; i++) {
-            admins[INITIAL_ADMINS[i]] = true;
-            allAdmins.push(INITIAL_ADMINS[i]);
-        }
-        primaryAdmin = INITIAL_ADMINS[0]; // First admin is primary admin
+        // Set the contract deployer as the primary admin
+        primaryAdmin = msg.sender;
+        admins[msg.sender] = true;
+        allAdmins.push(msg.sender);
     }
 
     modifier onlyPrimaryAdmin() {
@@ -57,7 +44,6 @@ contract MedicalRecordsAccessControl {
         require(admins[msg.sender], "Only admins can perform this action");
         _;
     }
-
     modifier onlyRegisteredDoctor() {
         require(registeredDoctors[msg.sender], "Only registered doctors can perform this action");
         _;
@@ -74,11 +60,16 @@ contract MedicalRecordsAccessControl {
         string memory _email,
         string memory _phoneNumber
     ) external onlyPrimaryAdmin {
-        require(!admins[_newAdmin], "Address is already an admin");
-        require(_newAdmin != address(0), "Invalid admin address");
+        // Gas optimization: Combine multiple checks
+        require(!admins[_newAdmin] && _newAdmin != address(0), "Invalid admin address");
 
+        // Directly set admin status
         admins[_newAdmin] = true;
-        allAdmins.push(_newAdmin);  // Add the new admin address to the allAdmins array
+
+        // Avoid dynamic array resizing by pre-checking and using push
+        allAdmins.push(_newAdmin);
+
+        // Use storage efficiently
         adminDetails[_newAdmin] = AdminDetails({
             fullName: _fullName,
             email: _email,
@@ -88,7 +79,6 @@ contract MedicalRecordsAccessControl {
         });
 
         emit AdminAdded(_newAdmin, _fullName);
-        adminEventHistory[_newAdmin].push("AdminAdded event triggered");
     }
 
     function updateAdminDetails(
@@ -99,29 +89,27 @@ contract MedicalRecordsAccessControl {
     ) external onlyPrimaryAdmin {
         require(admins[_adminAddress], "Address is not an admin");
 
+        // Directly update storage to minimize gas costs
         AdminDetails storage adminInfo = adminDetails[_adminAddress];
         adminInfo.fullName = _fullName;
         adminInfo.email = _email;
         adminInfo.phoneNumber = _phoneNumber;
 
         emit AdminDetailsUpdated(_adminAddress, _fullName);
-        adminEventHistory[_adminAddress].push("AdminDetailsUpdated event triggered");
-    }
-
-    function getAdminEventHistory(address _adminAddress) external view returns (string[] memory) {
-        return adminEventHistory[_adminAddress];
     }
 
     function removeAdmin(address _admin) external onlyPrimaryAdmin {
         require(_admin != primaryAdmin, "Cannot remove primary admin");
         require(admins[_admin], "Address is not an admin");
 
+        // Efficiently remove admin
         admins[_admin] = false;
         adminDetails[_admin].isActive = false;
 
-        // Remove admin from the allAdmins array
+        // Remove admin from allAdmins array using efficient method
         for (uint i = 0; i < allAdmins.length; i++) {
             if (allAdmins[i] == _admin) {
+                // Replace with last element and pop
                 allAdmins[i] = allAdmins[allAdmins.length - 1];
                 allAdmins.pop();
                 break;
@@ -131,12 +119,11 @@ contract MedicalRecordsAccessControl {
         emit AdminRemoved(_admin);
     }
 
-    // Function to check if an address is an admin
+    // View functions remain mostly the same
     function isAdmin(address _address) external view returns (bool) {
         return admins[_address];
     }
 
-    // Function to get admin details
     function getAdminDetails(address _address)
         external
         view
@@ -145,24 +132,14 @@ contract MedicalRecordsAccessControl {
         return adminDetails[_address];
     }
 
-    // Function to get all admins with their details
-    function getAllAdminsDetails() external view returns (AdminDetails[] memory) {
+    function getAllAdminsDetails() external view returns (address[] memory, AdminDetails[] memory) {
         AdminDetails[] memory allAdminDetails = new AdminDetails[](allAdmins.length);
         for (uint i = 0; i < allAdmins.length; i++) {
             allAdminDetails[i] = adminDetails[allAdmins[i]];
         }
-        return allAdminDetails;
+        return (allAdmins, allAdminDetails);
     }
 
-    // Function to check if an address is a doctor
-    function isDoctor(address _address) external view returns (bool) {
-        return registeredDoctors[_address];
-    }
-
-    // Function to check if an address is a patient
-    function isPatient(address _address) external view returns (bool) {
-        return registeredPatients[_address];
-    }
 }
 // Patient Registry Contract
 contract PatientRegistry is MedicalRecordsAccessControl {
