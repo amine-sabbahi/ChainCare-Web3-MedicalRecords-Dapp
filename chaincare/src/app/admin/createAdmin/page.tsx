@@ -257,15 +257,16 @@ export default function Admins() {
         <tbody>
         {admins.map((admin, index) => (
           <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td className="px-6 py-4">{admin.address}</td>
+            <td className="px-6 py-4">{`${admin.address.slice(0, 4)}...${admin.address.slice(-4)}`}</td>
             <td className="px-6 py-4">{admin.fullName}</td>
             <td className="px-6 py-4">{admin.email}</td>
             <td className="px-6 py-4">{admin.phoneNumber}</td>
             <td className="px-6 py-4">{formatDate(admin.registrationTimestamp)}</td>
-            <td className="px-6 py-4 space-x-2">
+            <td className="px-6 py-4">
+              <div className="flex space-x-2">
               <button 
                 onClick={() => handleModifyAdmin(admin)}
-                className="text-blue-600 hover:text-blue-800 hover:underline"
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
               >
                 Modify
               </button>
@@ -274,10 +275,11 @@ export default function Admins() {
                   setAdminToDelete(admin.address);
                   setShowDeleteModal(true);
                 }}
-                className="text-red-600 hover:text-red-800 hover:underline"
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
               >
                 Delete
-              </button>
+              </button>  
+              </div>
             </td>
           </tr>
         ))}

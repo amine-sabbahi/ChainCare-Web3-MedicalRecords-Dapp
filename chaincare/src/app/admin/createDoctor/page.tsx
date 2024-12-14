@@ -1,28 +1,27 @@
-// createDoctor/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import Layout from "@/components/Layout";
-import { useAuth } from "@/context/AuthContext";
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Web3 from "web3";
+import { useAuth } from "@/context/AuthContext";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 import SideBarAdmin from "@/components/SideBarAdmin";
 
-export default function Doctors() {
+export default function DoctorsRegistryPage() {
   const router = useRouter();
-  const { user, login, logout, loading } = useAuth();
+  const { user, logout } = useAuth();
 
   // State to store doctors' data and modal visibility
   const [doctors, setDoctors] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModifying, setIsModifying] = useState(false);
   const [newDoctor, setNewDoctor] = useState({
-    address: '',  // Fix the key name to "address"
-    name: '',
-    specialization: '',
-    email: '',
-    phoneNumber: '',
-    qualifications: '',
+    doctorAddress: "",
+    name: "",
+    specialization: "",
+    email: "",
+    phoneNumber: "",
+    qualifications: "",
   });
 
   // Fetch the list of doctors
@@ -32,43 +31,38 @@ export default function Doctors() {
         alert("Ethereum provider is not available. Please install MetaMask.");
         return;
       }
-
       const provider = new Web3(window.ethereum);
       const contract = new provider.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
 
       try {
         const doctorAddresses = await contract.methods.getAllRegisteredDoctors().call();
-        const doctorsData = await Promise.all(doctorAddresses.map(async (address) => {
-          const doctorProfile = await contract.methods.getDoctorProfile(address).call();
-          return {
-            address,
-            ...doctorProfile
-          };
-        }));
+        const doctorsData = await Promise.all(
+          doctorAddresses.map(async (address) => {
+            const doctorProfile = await contract.methods.getDoctorProfile(address).call();
+            return {
+              address,
+              ...doctorProfile,
+            };
+          })
+        );
         setDoctors(doctorsData);
       } catch (error) {
         console.error("Error fetching doctors:", error);
       }
     };
-
     fetchDoctors();
   }, []);
-
-  // Handle disconnect
-  const handleDisconnect = () => {
-    logout();
-  };
 
   // Handle input changes for new doctor
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewDoctor({
       ...newDoctor,
-      [name]: value
+      [name]: value,
     });
   };
 
-  // Handle submit to add a new doctor
+  // Add Doctor
   const handleAddDoctor = async () => {
     if (!window.ethereum) {
       alert("Ethereum provider is not available. Please install MetaMask.");
@@ -76,7 +70,7 @@ export default function Doctors() {
     }
 
     // Validate Ethereum address
-    if (!Web3.utils.isAddress(newDoctor.address)) {
+    if (!Web3.utils.isAddress(newDoctor.doctorAddress)) {
       alert("Invalid Ethereum address.");
       return;
     }
@@ -87,39 +81,152 @@ export default function Doctors() {
     try {
       const accounts = await provider.eth.getAccounts();
       await contract.methods.registerDoctor(
-        newDoctor.address,  // Ensure the address is valid
+        newDoctor.doctorAddress,
         newDoctor.name,
         newDoctor.specialization,
         newDoctor.email,
         newDoctor.phoneNumber,
-        newDoctor.qualifications.split(',')
+        newDoctor.qualifications.split(',').map(q => q.trim())
       ).send({ from: accounts[0] });
 
-      // Close modal after adding doctor
+      // Close modal and reset form
       setIsModalOpen(false);
+      setNewDoctor({
+        doctorAddress: "",
+        name: "",
+        specialization: "",
+        email: "",
+        phoneNumber: "",
+        qualifications: "",
+      });
 
-      // Re-fetch doctors list
+      // Refresh doctors list
       const doctorAddresses = await contract.methods.getAllRegisteredDoctors().call();
-      const doctorsData = await Promise.all(doctorAddresses.map(async (address) => {
-        const doctorProfile = await contract.methods.getDoctorProfile(address).call();
-        return {
-          address,
-          ...doctorProfile
-        };
-      }));
+      const doctorsData = await Promise.all(
+        doctorAddresses.map(async (address) => {
+          const doctorProfile = await contract.methods.getDoctorProfile(address).call();
+          return {
+            address,
+            ...doctorProfile,
+          };
+        })
+      );
       setDoctors(doctorsData);
     } catch (error) {
       console.error("Error adding doctor:", error);
+      alert("Failed to add doctor. Please try again.");
     }
+  };
+
+  // Delete Doctor
+  const handleDeleteDoctor = async (doctorAddress) => {
+    if (!window.ethereum) {
+      alert("Ethereum provider is not available. Please install MetaMask.");
+      return;
+    }
+    const provider = new Web3(window.ethereum);
+    const contract = new provider.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
+    try {
+      const accounts = await provider.eth.getAccounts();
+      // Note: You'll need to implement a deleteDoctor method in your contract
+      // This is a placeholder and should be replaced with the actual contract method
+      await contract.methods.updateDoctorProfile(
+        doctorAddress,
+        "", // empty name to effectively "delete"
+        "", // empty specialization
+        "", // empty email
+        "", // empty phone number
+        [] // empty qualifications
+      ).send({ from: accounts[0] });
+
+      setDoctors((prev) => prev.filter((doctor) => doctor.address !== doctorAddress));
+    } catch (error) {
+      console.error("Error deleting doctor:", error);
+      alert("Failed to delete doctor. Please try again.");
+    }
+  };
+
+  // Modify Doctor
+  const handleModifyDoctor = async () => {
+    if (!window.ethereum) {
+      alert("Ethereum provider is not available. Please install MetaMask.");
+      return;
+    }
+
+    const provider = new Web3(window.ethereum);
+    const contract = new provider.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
+
+    try {
+      const accounts = await provider.eth.getAccounts();
+      await contract.methods.updateDoctorProfile(
+        newDoctor.doctorAddress,
+        newDoctor.name,
+        newDoctor.specialization,
+        newDoctor.email,
+        newDoctor.phoneNumber,
+        newDoctor.qualifications.split(',').map(q => q.trim())
+      ).send({ from: accounts[0] });
+
+      // Close modal and reset form
+      setIsModalOpen(false);
+      setIsModifying(false);
+      setNewDoctor({
+        doctorAddress: "",
+        name: "",
+        specialization: "",
+        email: "",
+        phoneNumber: "",
+        qualifications: "",
+      });
+
+      // Refresh doctors list
+      const doctorAddresses = await contract.methods.getAllRegisteredDoctors().call();
+      const doctorsData = await Promise.all(
+        doctorAddresses.map(async (address) => {
+          const doctorProfile = await contract.methods.getDoctorProfile(address).call();
+          return {
+            address,
+            ...doctorProfile,
+          };
+        })
+      );
+      setDoctors(doctorsData);
+    } catch (error) {
+      console.error("Error modifying doctor:", error);
+      alert("Failed to modify doctor. Please try again.");
+    }
+  };
+
+  // Prepare doctor for modification
+  const prepareModifyDoctor = (doctor) => {
+    setNewDoctor({
+      doctorAddress: doctor.address,
+      name: doctor.name,
+      specialization: doctor.specialization,
+      email: doctor.email,
+      phoneNumber: doctor.phoneNumber,
+      qualifications: doctor.qualifications.join(", "),
+    });
+    setIsModifying(true);
+    setIsModalOpen(true);
   };
 
   return (
     <SideBarAdmin>
       <h1 className="text-3xl font-bold text-left text-black my-6">Doctors Registry</h1>
-
-      {/* Add Doctor Button */}
-      <button 
-        onClick={() => setIsModalOpen(true)} 
+      <button
+        onClick={() => {
+          setNewDoctor({
+            doctorAddress: "",
+            name: "",
+            specialization: "",
+            email: "",
+            phoneNumber: "",
+            qualifications: "",
+          });
+          setIsModifying(false);
+          setIsModalOpen(true);
+        }}
         className="mb-6 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-300"
       >
         Add Doctor
@@ -130,28 +237,39 @@ export default function Doctors() {
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" className="px-6 py-3">Doctor Name</th>
-              <th scope="col" className="px-6 py-3">Specialization</th>
-              <th scope="col" className="px-6 py-3">Email</th>
-              <th scope="col" className="px-6 py-3">Phone Number</th>
-              <th scope="col" className="px-6 py-3">Qualifications</th>
-              <th scope="col" className="px-6 py-3">Status</th>
+              <th className="px-6 py-3">Doctor Address</th>
+              <th className="px-6 py-3">Doctor Name</th>
+              <th className="px-6 py-3">Specialization</th>
+              <th className="px-6 py-3">Email</th>
+              <th className="px-6 py-3">Phone Number</th>
+              <th className="px-6 py-3">Qualifications</th>
+              <th className="px-6 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
             {doctors.map((doctor, index) => (
               <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                <td className="px-6 py-4">{`${doctor.address.slice(0, 4)}...${doctor.address.slice(-4)}`}</td>
                 <td className="px-6 py-4">{doctor.name}</td>
                 <td className="px-6 py-4">{doctor.specialization}</td>
                 <td className="px-6 py-4">{doctor.email}</td>
                 <td className="px-6 py-4">{doctor.phoneNumber}</td>
                 <td className="px-6 py-4">{doctor.qualifications.join(", ")}</td>
                 <td className="px-6 py-4">
-                  {doctor.isActive ? (
-                    <span className="text-green-500 font-semibold">Active</span>
-                  ) : (
-                    <span className="text-red-500 font-semibold">Inactive</span>
-                  )}
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => prepareModifyDoctor(doctor)}
+                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                    >
+                      Modify
+                    </button>
+                    <button
+                      onClick={() => handleDeleteDoctor(doctor.address)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -159,19 +277,23 @@ export default function Doctors() {
         </table>
       </div>
 
-      {/* Modal for Adding Doctor */}
+      {/* Modal for Adding/Modifying Doctor */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-96">
-            <h2 className="text-xl font-bold mb-4">Add New Doctor</h2>
+            <h2 className="text-xl font-bold mb-4">
+              {isModifying ? "Modify Doctor" : "Add Doctor"}
+            </h2>
             <form className="space-y-4">
-            <input
+              <input
                 type="text"
-                name="address"
-                placeholder="Doctor Address"
-                value={newDoctor.address || ''} 
+                name="doctorAddress"
+                placeholder="Doctor Ethereum Address"
+                value={newDoctor.doctorAddress}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded-md"
+                required
+                disabled={isModifying} // Disable when modifying
               />
               <input
                 type="text"
@@ -180,6 +302,7 @@ export default function Doctors() {
                 value={newDoctor.name}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded-md"
+                required
               />
               <input
                 type="text"
@@ -188,6 +311,7 @@ export default function Doctors() {
                 value={newDoctor.specialization}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded-md"
+                required
               />
               <input
                 type="email"
@@ -196,6 +320,7 @@ export default function Doctors() {
                 value={newDoctor.email}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded-md"
+                required
               />
               <input
                 type="text"
@@ -204,29 +329,34 @@ export default function Doctors() {
                 value={newDoctor.phoneNumber}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded-md"
+                required
               />
               <input
                 type="text"
                 name="qualifications"
-                placeholder="Qualifications (comma separated)"
+                placeholder="Qualifications (comma-separated)"
                 value={newDoctor.qualifications}
                 onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded-md"
+                required
               />
               <div className="flex justify-between">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    setIsModifying(false);
+                  }}
                   className="px-6 py-2 bg-gray-300 text-black rounded-lg hover:bg-gray-400"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={handleAddDoctor}
+                  onClick={isModifying ? handleModifyDoctor : handleAddDoctor}
                   className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 >
-                  Add Doctor
+                  {isModifying ? "Update Doctor" : "Add Doctor"}
                 </button>
               </div>
             </form>
