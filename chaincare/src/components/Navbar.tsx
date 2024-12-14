@@ -5,6 +5,7 @@ import { Disclosure } from "@headlessui/react";
 import ChaincareLogo from "../../public/img/Chaincare_verticale-logo copy.png";
 import React from 'react';
 import {useAuth} from "@/context/AuthContext";
+import Loading from "@/components/Loading";
 
 export const Navbar = () => {
   const navigation = ["Product", "Features", "Pricing", "Company", "Blog"];
@@ -36,7 +37,10 @@ export const Navbar = () => {
         {/* Connect Wallet Button */}
         <div className="gap-3 nav__item mr-2 lg:flex ml-auto lg:ml-0 lg:order-2">
           <div className="hidden mr-3 lg:flex nav__item">
-            {user.isAuthenticated ? (
+            {loading ? (
+              <Loading/>
+              ) :
+              user.isAuthenticated ? (
               <button
                 onClick={handleDisconnect}
                 className="px-6 py-2 text-white bg-red-500 rounded-md"

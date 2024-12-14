@@ -1,214 +1,266 @@
 "use client";
 
-// src/app/doctor/page.tsx
-import '../globals.css';
 import { useState, useEffect } from 'react';
-import { Button, Container, Grid, Card, Typography } from '@mui/material';
-import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
+import {
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
+  Divider,
+  Box,
+  Paper,
+  Chip, Container
+} from '@mui/material';
+import {
+  MedicalServices as MedicalServicesIcon,
+  Article as ArticleIcon,
+  AccountCircle as AccountCircleIcon
+} from '@mui/icons-material';
 import Web3 from 'web3';
+import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
+import SideBarDoctor from "@/components/SideBarDoctor";
+
+// Interfaces for type safety
+interface DoctorInfo {
+  doctorAddress: string;
+  name: string;
+  specialization: string;
+  email: string;
+  phoneNumber: string;
+}
+
+interface PatientDocument {
+  doctorAddress: string;
+  patientAddress: string;
+  fileLinks: string[];
+  timestamp: number;
+}
+
+interface PatientAccessProfile {
+  patientProfile: {
+    name: string;
+    age: number;
+    gender: string;
+    email: string;
+    phoneNumber: string;
+    allergies: string[];
+  };
+  address: string;
+}
 
 export default function DoctorDashboard() {
-  const [doctorInfo, setDoctorInfo] = useState({
+  const [doctorInfo, setDoctorInfo] = useState<DoctorInfo>({
     doctorAddress: '',
-    name: '',
-    specialization: '',
-    email: '',
-    phoneNumber: '',
-  }); // Store doctor info
-  const [loading, setLoading] = useState(true); // Handle loading state
+    name: 'Unknown',
+    specialization: 'Not specified',
+    email: 'Not specified',
+    phoneNumber: 'Not specified'
+  });
+  const [loading, setLoading] = useState(true);
+  const [patients, setPatients] = useState<PatientAccessProfile[]>([]);
+  const [recentDocuments, setRecentDocuments] = useState<PatientDocument[]>([]);
 
-  // Function to fetch doctor info from contract
+  // Initialize Web3 and contracts
+  const initializeWeb3 = () => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      const web3 = new Web3(window.ethereum);
+      return {
+        web3,
+        doctorRegistryContract: new web3.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY),
+        patientRegistryContract: new web3.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY),
+        documentStorageContract: new web3.eth.Contract(ABI.DOCUMENT_STORAGE, CONTRACT_ADDRESSES.DOCUMENT_STORAGE)
+      };
+    }
+    return null;
+  };
+
+  // Fetch doctor info from contract
   const fetchDoctorInfo = async () => {
     try {
-      if (!window.ethereum) {
-        alert("Ethereum provider is not available. Please install MetaMask.");
-        return;
-      }
+      const web3Instance = initializeWeb3();
+      if (!web3Instance) throw new Error('Web3 not initialized');
 
-      const web3 = new Web3(window.ethereum);
-      const contract = new web3.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
+      const accounts = await web3Instance.web3.eth.getAccounts();
+      const doctorAddress = accounts[0];
 
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const doctorAddress = accounts[0]; // Current user address
+      const info = await web3Instance.doctorRegistryContract.methods.getDoctorProfile(doctorAddress).call();
 
-      const info: any = await contract.methods.getDoctorProfile(doctorAddress).call();
-      console.log("Fetched doctor data:", info);
-      
-      if (info) {
-        setDoctorInfo({
-          doctorAddress: doctorAddress,
-          name: info.name || 'Unknown',
-          specialization: info.specialization || 'Not specified',
-          email: info.email || 'Not specified',
-          phoneNumber: info.phoneNumber || 'Not specified',
-        });
-      }
+      setDoctorInfo({
+        doctorAddress,
+        name: info.name || 'Unknown',
+        specialization: info.specialization || 'Not specified',
+        email: info.email || 'Not specified',
+        phoneNumber: info.phoneNumber || 'Not specified'
+      });
     } catch (error) {
       console.error("Error fetching doctor data:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Fetch doctor info on component mount
+  // Fetch patients for the doctor
+  const fetchPatients = async () => {
+    try {
+      const web3Instance = initializeWeb3();
+      if (!web3Instance) throw new Error('Web3 not initialized');
+
+      const patientAddresses = await web3Instance.patientRegistryContract.methods.getAllRegisteredPatients().call();
+
+      const patientsWithProfiles = await Promise.all(
+        patientAddresses.map(async (address: string) => {
+          const patientProfile = await web3Instance.patientRegistryContract.methods.getPatientProfile(address).call();
+          return { patientProfile, address };
+        })
+      );
+
+      setPatients(patientsWithProfiles);
+    } catch (error) {
+      console.error("Error fetching patients:", error);
+    }
+  };
+
+  // Fetch recent documents across all patients
+  const fetchRecentDocuments = async () => {
+    try {
+      const web3Instance = initializeWeb3();
+      if (!web3Instance) throw new Error('Web3 not initialized');
+
+      const patientAddresses = await web3Instance.patientRegistryContract.methods.getAllRegisteredPatients().call();
+
+      const allDocuments: PatientDocument[] = [];
+
+      for (const address of patientAddresses) {
+        const patientDocs = await web3Instance.documentStorageContract.methods.getDocuments(address).call();
+        allDocuments.push(...patientDocs);
+      }
+
+      // Sort documents by timestamp, most recent first
+      const sortedDocuments = allDocuments.sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+
+      // Take top 5 most recent documents
+      setRecentDocuments(sortedDocuments.slice(0, 5));
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+    }
+  };
+
+  // Fetch all data on component mount
   useEffect(() => {
-    fetchDoctorInfo();
+    const fetchAllData = async () => {
+      await fetchDoctorInfo();
+      await fetchPatients();
+      await fetchRecentDocuments();
+      setLoading(false);
+    };
+
+    fetchAllData();
   }, []);
 
-  // Log the updated doctor info when it changes
-  useEffect(() => {
-    console.log("Updated doctor info:", doctorInfo);
-  }, [doctorInfo]);
+  // Render dashboard sections
+  const renderSummarySection = () => (
+    <Grid container spacing={3}>
+      <Grid item xs={12} md={4}>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" mb={2}>
+              <AccountCircleIcon color="primary" sx={{ mr: 2, fontSize: 40 }} />
+              <Typography variant="h6">Doctor Profile</Typography>
+            </Box>
+            <Typography variant="body1">
+              Name: {doctorInfo.name}
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              Specialization: {doctorInfo.specialization}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" mb={2}>
+              <MedicalServicesIcon color="primary" sx={{ mr: 2, fontSize: 40 }} />
+              <Typography variant="h6">Patient Statistics</Typography>
+            </Box>
+            <Typography variant="body1">
+              Total Patients: {patients.length}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <Card>
+          <CardContent>
+            <Box display="flex" alignItems="center" mb={2}>
+              <ArticleIcon color="primary" sx={{ mr: 2, fontSize: 40 }} />
+              <Typography variant="h6">Recent Documents</Typography>
+            </Box>
+            <Typography variant="body1">
+              Total Documents: {recentDocuments.length}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Grid>
+    </Grid>
+  );
+
+  const renderRecentDocuments = () => (
+    <Card sx={{ mt: 3 }}>
+      <CardContent>
+        <Typography variant="h6" gutterBottom>
+          Recent Patient Documents
+        </Typography>
+        {recentDocuments.length === 0 ? (
+          <Typography variant="body2" color="textSecondary">
+            No recent documents
+          </Typography>
+        ) : (
+          recentDocuments.map((doc, index) => (
+            <Box key={index} mb={2}>
+              <Typography variant="body2">
+                Patient: {doc.patientAddress}
+              </Typography>
+              <Typography variant="caption" color="textSecondary">
+                Uploaded: {new Date(Number(doc.timestamp) * 1000).toLocaleString()}
+              </Typography>
+              <Box display="flex" gap={1} mt={1}>
+                {doc.fileLinks.map((link, linkIndex) => (
+                  <Chip
+                    key={linkIndex}
+                    label={`File ${linkIndex + 1}`}
+                    variant="outlined"
+                    color="primary"
+                    size="small"
+                  />
+                ))}
+              </Box>
+              <Divider sx={{ my: 1 }} />
+            </Box>
+          ))
+        )}
+      </CardContent>
+    </Card>
+  );
 
   return (
-    <div className="bg-pastel-100 min-h-screen">
-      <header className="bg-pastel-600 p-4 shadow-md">
-        <Typography
-          variant="h4"
-          align="center"
-          className="font-semibold"
-          sx={{ color: '#a8d5e2' }} // Pastel color
-        >
+    <SideBarDoctor>
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Typography variant="h4" gutterBottom>
           Doctor Dashboard
         </Typography>
-      </header>
 
-      <Container maxWidth="lg" sx={{ mt: 6 }}>
-        <section>
-          {loading ? (
-            <Typography variant="h6" align="center">
-              Loading doctor data...
-            </Typography>
-          ) : doctorInfo ? (
-            <>
-              <Typography
-                variant="h5"
-                gutterBottom
-                align="center"
-                className="text-pastel-800 font-bold"
-              >
-                Welcome, Dr. {doctorInfo.name}
-              </Typography>
-
-              <Typography
-                variant="body1"
-                color="textSecondary"
-                align="center"
-                className="text-pastel-600"
-              >
-                Specialization: {doctorInfo.specialization} | Contact: {doctorInfo.phoneNumber}
-              </Typography>
-            </>
-          ) : (
-            <Typography variant="h6" align="center">
-              No doctor data available.
-            </Typography>
-          )}
-        </section>
-
-        <section>
-          <Typography
-            variant="h6"
-            sx={{ mt: 6 }}
-            className="text-pastel-800 font-semibold"
-          >
-            Quick Actions
-          </Typography>
-          <Grid container spacing={4} sx={{ mt: 3 }}>
-            {/* Card for viewing patients */}
-            <Grid item xs={12} sm={4}>
-              <Card
-                sx={{
-                  p: 3,
-                  borderRadius: '16px',
-                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: '#fdf4e3',
-                }}
-              >
-                <Typography variant="h6" className="text-pastel-800">
-                  View Patients
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  View a list of all registered patients.
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    mt: 2,
-                    backgroundColor: '#a8d5e2',
-                    ':hover': { backgroundColor: '#86c5d8' },
-                  }}
-                  href="/doctor/view_patients"
-                >
-                  View Patients
-                </Button>
-              </Card>
-            </Grid>
-            {/* Card for managing access to medical records */}
-            <Grid item xs={12} sm={4}>
-              <Card
-                sx={{
-                  p: 3,
-                  borderRadius: '16px',
-                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: '#e6f3ec',
-                }}
-              >
-                <Typography variant="h6" className="text-pastel-800">
-                  Manage Patient Access
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Grant or revoke access to patient records.
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    mt: 2,
-                    backgroundColor: '#f5b6c4',
-                    ':hover': { backgroundColor: '#e298a5' },
-                  }}
-                  href="/doctor/manage-access"
-                >
-                  Manage Access
-                </Button>
-              </Card>
-            </Grid>
-            {/* Card for adding or updating medical records */}
-            <Grid item xs={12} sm={4}>
-              <Card
-                sx={{
-                  p: 3,
-                  borderRadius: '16px',
-                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                  backgroundColor: '#fcefee',
-                }}
-              >
-                <Typography variant="h6" className="text-pastel-800">
-                  Add Medical Record
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Add or update medical records for your patients.
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    mt: 2,
-                    backgroundColor: '#fad6a5',
-                    ':hover': { backgroundColor: '#f7c68a' },
-                  }}
-                  href="/doctor/add-record"
-                >
-                  Add Record
-                </Button>
-              </Card>
-            </Grid>
-          </Grid>
-        </section>
+        {loading ? (
+          <Typography>Loading...</Typography>
+        ) : (
+          <>
+            {renderSummarySection()}
+            {renderRecentDocuments()}
+          </>
+        )}
       </Container>
-
-      <footer className="bg-pastel-700 text-purple p-4 mt-6 text-center shadow-md">
-        <p>&copy; 2024 Medical Records with Blockchain</p>
-      </footer>
-    </div>
+    </SideBarDoctor>
   );
 }
