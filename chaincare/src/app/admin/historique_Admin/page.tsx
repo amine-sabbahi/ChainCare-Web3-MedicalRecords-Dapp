@@ -1,550 +1,177 @@
-"use client";
+'use client';
 import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
-import { useAuth } from '@/context/AuthContext';
-import { Button, Container, Grid, Card, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import Sidebar from '@/components/SideBarAdmin';
-import { ABI, CONTRACT_ADDRESSES } from '@/components/contracts';
+import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
+import SideBarAdmin from "@/components/SideBarAdmin";
 
-let web3;
-let contract;
+export default function HistoryPage() {
+    const [web3, setWeb3] = useState(null);
+    const [accounts, setAccounts] = useState([]);
+    const [transactions, setTransactions] = useState([]);
 
-if (typeof window !== "undefined" && window.ethereum) {
-  web3 = new Web3(window.ethereum);
-  contract = new web3.eth.Contract(ABI.MEDICAL_RECORDS_MANAGER, CONTRACT_ADDRESSES.MEDICAL_RECORDS_MANAGER);
+    useEffect(() => {
+        const initWeb3 = async () => {
+            if (window.ethereum) {
+                const web3Instance = new Web3(window.ethereum);
+                try {
+                    // Request account access
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    setWeb3(web3Instance);
+                    const accs = await web3Instance.eth.getAccounts();
+                    setAccounts(accs);
+                    await fetchComprehensiveTransactionHistory(web3Instance);
+                } catch (error) {
+                    console.error("User denied account access")
+                }
+            }
+        };
+
+        initWeb3();
+    }, []);
+
+    const fetchComprehensiveTransactionHistory = async (web3Instance) => {
+      if (!web3Instance) return;
+  
+      const contracts = {
+          medicalRecordsManager: new web3Instance.eth.Contract(ABI.MEDICAL_RECORDS_MANAGER, CONTRACT_ADDRESSES.MEDICAL_RECORDS_MANAGER),
+          patientRegistry: new web3Instance.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY),
+          doctorRegistry: new web3Instance.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY),
+          accessControl: new web3Instance.eth.Contract(ABI.MEDICAL_ACCESS_CONTROL, CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL),
+          auditTrail: new web3Instance.eth.Contract(ABI.AUDIT_TRAIL, CONTRACT_ADDRESSES.AUDIT_TRAIL),
+          documentStorage: new web3Instance.eth.Contract(ABI.DOCUMENT_STORAGE, CONTRACT_ADDRESSES.DOCUMENT_STORAGE)
+      };
+  
+      const allTransactions = [];
+  
+      // Fetch events from all relevant contracts
+      const eventSources = [
+          // Access Control Events
+          {
+              contract: contracts.accessControl,
+              events: [
+                  { name: 'AdminAdded', type: 'Add Admin', transform: (log) => `Admin Added: ${log.returnValues.name || 'Unknown'}` },
+                  { name: 'AdminRemoved', type: 'Remove Admin', transform: (log) => `Admin Removed: ${log.returnValues.removedAdmin || 'Unknown'}` },
+                  { name: 'AdminDetailsUpdated', type: 'Update Admin', transform: (log) => `Admin Updated: ${log.returnValues.name || 'Unknown'}` }
+              ]
+          },
+          // Patient Registry Events
+          {
+              contract: contracts.patientRegistry,
+              events: [
+                  { 
+                      name: 'PatientRegistered', 
+                      type: 'Add Patient', 
+                      transform: (log) => {
+                          console.log('Full Patient Registered Log:', log);
+                          console.log('Log returnValues:', log.returnValues[1]);
+                          console.log('Log event name:', log.event);
+                          console.log('Patient Registered Log:', log.returnValues);
+                          return `Patient Registered: ${log.returnValues[0].name || 'Unknown'}, Age: ${log.returnValues[1].age || 'N/A'}`;
+                      }
+                  },
+                  { 
+                      name: 'PatientProfileUpdated', 
+                      type: 'Update Patient', 
+                      transform: (log) => `Patient Profile Updated: ${log.returnValues.name || 'Unknown'}` 
+                  }
+              ]
+          },
+          // Doctor Registry Events
+          {
+              contract: contracts.doctorRegistry,
+              events: [
+                  { 
+                      name: 'DoctorRegistered', 
+                      type: 'Add Doctor', 
+                      transform: (log) => {
+                          console.log('Doctor Registered Log:', log.returnValues);
+                          return `Doctor Registered: ${log.returnValues.name || 'Unknown'}, Specialization: ${log.returnValues.specialization || 'N/A'}`;
+                      }
+                  },
+                  { 
+                      name: 'DoctorProfileUpdated', 
+                      type: 'Update Doctor', 
+                      transform: (log) => `Doctor Profile Updated: ${log.returnValues.name || 'Unknown'}` 
+                  }
+              ]
+          },
+          // Medical Records Manager Events
+          {
+              contract: contracts.medicalRecordsManager,
+              events: [
+                  { name: 'DoctorAccessGranted', type: 'Grant Access', transform: (log) => `Doctor Access Granted: Patient ${log.returnValues.patient} to Doctor ${log.returnValues.doctor}` },
+                  { name: 'DoctorAccessRevoked', type: 'Revoke Access', transform: (log) => `Doctor Access Revoked: Patient ${log.returnValues.patient} from Doctor ${log.returnValues.doctor}` },
+                  { name: 'MedicalRecordAdded', type: 'Add Medical Record', transform: (log) => `Medical Record Added: Patient ${log.returnValues.patient}, Record Type: ${log.returnValues.recordType}` },
+                  { name: 'MedicalRecordUpdated', type: 'Update Medical Record', transform: (log) => `Medical Record Updated: Record ID ${log.returnValues.recordId}` },
+                  { name: 'MedicalRecordDeleted', type: 'Delete Medical Record', transform: (log) => `Medical Record Deleted: Record ID ${log.returnValues.recordId}` }
+              ]
+          },
+          // Document Storage Events
+          {
+              contract: contracts.documentStorage,
+              events: [
+                  { name: 'DocumentUploaded', type: 'Upload Document', transform: (log) => `Document Uploaded: Patient ${log.returnValues.patientAddress}, Doctor ${log.returnValues.doctorAddress}` }
+              ]
+          }
+      ];
+  
+      // Fetch and process events from all sources
+      for (const source of eventSources) {
+          for (const eventConfig of source.events) {
+              try {
+                  const logs = await source.contract.getPastEvents(eventConfig.name, { fromBlock: 0 });
+                  
+                  console.log(`Logs for ${eventConfig.name}:`, logs);
+                  
+                  logs.forEach(log => {
+                      // Add a fallback for timestamp if not present
+                      const eventTimestamp = log.returnValues.timestamp 
+                          ? log.returnValues.timestamp * 1000 
+                          : log.blockTimestamp 
+                          ? log.blockTimestamp * 1000 
+                          : Date.now();
+  
+                      allTransactions.push({
+                          type: eventConfig.type,
+                          details: eventConfig.transform(log),
+                          date: new Date(eventTimestamp).toLocaleString()
+                      });
+                  });
+              } catch (error) {
+                  console.error(`Error fetching ${eventConfig.name} events:`, error);
+              }
+          }
+      }
+  
+      // Sort transactions by date in descending order
+      setTransactions(allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date)));
+  };
+
+    return (
+        <SideBarAdmin>
+            <div className="p-4">
+                <h1 className="text-2xl font-bold mb-4">Comprehensive Transaction History</h1>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white shadow-md rounded-lg">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="py-3 px-4 border-b text-left font-semibold">Transaction Type</th>
+                                <th className="py-3 px-4 border-b text-left font-semibold">Details</th>
+                                <th className="py-3 px-4 border-b text-left font-semibold">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {transactions.map((transaction, index) => (
+                                <tr key={index} className="hover:bg-gray-50">
+                                    <td className="py-2 px-4 border-b">{transaction.type}</td>
+                                    <td className="py-2 px-4 border-b">{transaction.details}</td>
+                                    <td className="py-2 px-4 border-b">{transaction.date}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </SideBarAdmin>
+    );
 }
-
-export default function Dashboard() {
-  const { logout } = useAuth();
-  const [transactions, setTransactions] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-
-  const listenForTransactionEvents = async () => {
-    try {
-      // Initialize web3 with the Ethereum provider
-      const provider = new Web3(window.ethereum);
-      const contract = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
-      
-  
-      // Listen for the "PatientProfileUpdated" events
-      contract.events.PatientProfileUpdated({ fromBlock: 'latest' })
-        .on('data', async (event) => {
-          try {
-            console.log("Received event", event);
-  
-            // Extract data from the event
-            const { patientAddress, name } = event.returnValues;
-            const transactionHash = event.transactionHash;
-  
-            console.log("Transaction Hash", transactionHash);
-  
-            // Fetch transaction and receipt details
-            const transactionDetails = await provider.eth.getTransaction(transactionHash);
-            const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
-  
-            // Fetch block details for timestamp
-            const blockDetails = await provider.eth.getBlock(event.blockNumber);
-            const blockTimestamp = blockDetails.timestamp; // in seconds
-
-            const timestampInSeconds = Number(blockTimestamp);
-
-            // Convert seconds to milliseconds
-            const timestampInMilliseconds = timestampInSeconds * 1000;
-
-            // Create a Date object
-            const readableDate = new Date(timestampInMilliseconds);
-
-            // Format the date to a human-readable format
-            console.log("Readable Date:", readableDate.toLocaleString());
-  
-            // Format the transaction data
-            const newTransaction = {
-                type: "Profile Updated", 
-              patientAddress,
-              name,
-              transactionHash,
-              value: transactionDetails.value, // Amount transferred (if any)
-              gasUsed: transactionReceipt.gasUsed, // Gas used
-              status: transactionReceipt.status ? "Success" : "Failed", // Transaction status
-              timestamp: readableDate  // Convert timestamp to readable format
-            };
-  
-            console.log("New Transaction", newTransaction);
-  
-            // Update the transaction state
-            setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
-          } catch (error) {
-            console.error("Error processing the event data:", error);
-          }
-        });
-    } catch (error) {
-      console.error("Failed to initialize event listener:", error);
-    }
-  };
-
-  const listenForTransactionAccess = async () => {
-    try {
-      // Initialize web3 with the Ethereum provider
-      const provider = new Web3(window.ethereum);
-      const contract = new provider.eth.Contract(ABI.MEDICAL_RECORDS_MANAGER, CONTRACT_ADDRESSES.MEDICAL_RECORDS_MANAGER);
-  
-      // Listen for the "DoctorAccessGranted" events
-      contract.events.DoctorAccessGranted({ fromBlock: 'latest' })
-        .on('data', async (event) => {
-          try {
-            console.log("Received DoctorAccessGranted event", event.returnValues);
-            
-            // Extract data from the event
-            const { patient, doctor } = event.returnValues;
-            const transactionHash = event.transactionHash;
-            console.log("Transaction Hash for Granting Access", transactionHash);
-  
-            // Fetch transaction and receipt details
-            const transactionDetails = await provider.eth.getTransaction(transactionHash);
-            const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
-            
-            // Fetch block details for timestamp
-            const blockDetails = await provider.eth.getBlock(event.blockNumber);
-            const blockTimestamp = blockDetails.timestamp;
-            
-            // Convert block timestamp to milliseconds
-            const readableDate = new Date(Number(blockTimestamp) * 1000);
-            console.log("Readable Date for Access Granted:", readableDate.toLocaleString());
-  
-            // Prepare the transaction data
-            const newTransaction = {
-              type: "Access Granted",
-              patient,
-              doctor,
-              transactionHash,
-              value: transactionDetails.value,
-              gasUsed: transactionReceipt.gasUsed,
-              status: transactionReceipt.status ? "Success" : "Failed",
-              timestamp: readableDate
-            };
-            
-            console.log("New Transaction for Access Granted", newTransaction);
-            setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
-          } catch (error) {
-            console.error("Error processing the Grant Access event data:", error);
-          }
-        });
-  
-      // Listen for the "DoctorAccessRevoked" events
-      contract.events.DoctorAccessRevoked({ fromBlock: 'latest' })
-        .on('data', async (event) => {
-          try {
-            console.log("Received DoctorAccessRevoked event", event.returnValues);
-  
-            // Extract data from the event
-            const { patient, doctor } = event.returnValues;
-            const transactionHash = event.transactionHash;
-            console.log("Transaction Hash for Revoking Access", transactionHash);
-  
-            // Fetch transaction and receipt details
-            const transactionDetails = await provider.eth.getTransaction(transactionHash);
-            const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
-            
-            // Fetch block details for timestamp
-            const blockDetails = await provider.eth.getBlock(event.blockNumber);
-            const blockTimestamp = blockDetails.timestamp;
-            
-            // Convert block timestamp to milliseconds
-            const readableDate = new Date(Number(blockTimestamp) * 1000);
-            console.log("Readable Date for Access Revoked:", readableDate.toLocaleString());
-  
-            // Prepare the transaction data
-            const newTransaction = {
-              type: "Access Revoked",
-              patient,
-              doctor,
-              transactionHash,
-              value: transactionDetails.value,
-              gasUsed: transactionReceipt.gasUsed,
-              status: transactionReceipt.status ? "Success" : "Failed",
-              timestamp: readableDate
-            };
-            
-            console.log("New Transaction for Access Revoked", newTransaction);
-            setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
-          } catch (error) {
-            console.error("Error processing the Revoke Access event data:", error);
-          }
-        });
-  
-    } catch (error) {
-      console.error("Failed to initialize event listener:", error);
-    }
-  };
-  
-
-  const fetchHistoricalEvents = async () => {
-    try {
-      console.log("hi");
-  
-      const provider = new Web3(window.ethereum);
-      const contract = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
-  
-      // Fetch all the "PatientProfileUpdated" events from the contract (historical events)
-      const events = await contract.getPastEvents("PatientProfileUpdated", {
-        fromBlock: 0,  // Starts from the first block (you can set a different block number if needed)
-        toBlock: 'latest'  // Ensures that we get up to the latest block
-      });
-  
-      console.log(events);
-  
-      // Using for..of to handle async calls in a loop
-      for (let event of events) {
-        const { patientAddress, name } = event.returnValues;
-        const transactionHash = event.transactionHash;
-  
-        // Fetch block details for timestamp
-        const blockDetails = await provider.eth.getBlock(event.blockNumber);
-        const blockTimestamp = blockDetails.timestamp; // in seconds
-  
-        const timestampInSeconds = Number(blockTimestamp);
-        // Convert seconds to milliseconds
-        const timestampInMilliseconds = timestampInSeconds * 1000;
-        // Create a Date object
-        const readableDate = new Date(timestampInMilliseconds);
-  
-        // Fetch additional data from transaction
-        const transactionDetails = await provider.eth.getTransaction(transactionHash);
-        const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
-  
-        // Creating a new transaction object with the details
-        const newTransaction = {
-          type: "Profile Updated",
-          patientAddress,
-          name,
-          transactionHash,
-          value: transactionDetails.value,
-          gasUsed: transactionReceipt.gasUsed,
-          status: transactionReceipt.status ? "Success" : "Failed",
-          timestamp: readableDate
-        };
-  
-        // Update the transactions state
-        setTransactions((prevTransactions) => [...prevTransactions, newTransaction]);
-      }
-    } catch (error) {
-      console.error("Error fetching historical events:", error);
-    }
-  };
-
-  const fetchHistoricalAccess = async () => {
-    try {
-      console.log("hi");
-  
-      const provider = new Web3(window.ethereum);
-      const contract = new provider.eth.Contract(ABI.MEDICAL_RECORDS_MANAGER, CONTRACT_ADDRESSES.MEDICAL_RECORDS_MANAGER);
-  
-      // Fetch historical events for "DoctorAccessGranted"
-      const grantEvents = await contract.getPastEvents("DoctorAccessGranted", {
-        fromBlock: 0,  // Starts from the first block (you can set a different block number if needed)
-        toBlock: 'latest'  // Ensures that we get up to the latest block
-      });
-  
-      console.log("Grant Events: ", grantEvents);
-  
-      // Process the "Access Granted" events
-      for (let event of grantEvents) {
-        const { patient, doctor } = event.returnValues;
-        const transactionHash = event.transactionHash;
-  
-        // Fetch block details for timestamp
-        const blockDetails = await provider.eth.getBlock(event.blockNumber);
-        const blockTimestamp = blockDetails.timestamp; // in seconds
-  
-        const timestampInSeconds = Number(blockTimestamp);
-        // Convert seconds to milliseconds
-        const timestampInMilliseconds = timestampInSeconds * 1000;
-        const readableDate = new Date(timestampInMilliseconds);
-  
-        // Fetch transaction and receipt details
-        const transactionDetails = await provider.eth.getTransaction(transactionHash);
-        const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
-  
-        const newTransaction = {
-          type: "Access Granted",
-          patient,
-          doctor,
-          transactionHash,
-          value: transactionDetails.value,
-          gasUsed: transactionReceipt.gasUsed,
-          status: transactionReceipt.status ? "Success" : "Failed",
-          timestamp: readableDate
-        };
-  
-        // Update state with the new transaction data
-        setTransactions((prevTransactions) => [...prevTransactions, newTransaction]);
-      }
-  
-      // Fetch historical events for "DoctorAccessRevoked"
-      const revokeEvents = await contract.getPastEvents("DoctorAccessRevoked", {
-        fromBlock: 0,
-        toBlock: 'latest'
-      });
-  
-      console.log("Revoke Events: ", revokeEvents);
-  
-      // Process the "Access Revoked" events
-      for (let event of revokeEvents) {
-        const { patient, doctor } = event.returnValues;
-        const transactionHash = event.transactionHash;
-  
-        // Fetch block details for timestamp
-        const blockDetails = await provider.eth.getBlock(event.blockNumber);
-        const blockTimestamp = blockDetails.timestamp; // in seconds
-  
-        const timestampInSeconds = Number(blockTimestamp);
-        // Convert seconds to milliseconds
-        const timestampInMilliseconds = timestampInSeconds * 1000;
-        const readableDate = new Date(timestampInMilliseconds);
-  
-        // Fetch transaction and receipt details
-        const transactionDetails = await provider.eth.getTransaction(transactionHash);
-        const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
-  
-        const newTransaction = {
-          type: "Access Revoked",
-          patient,
-          doctor,
-          transactionHash,
-          value: transactionDetails.value,
-          gasUsed: transactionReceipt.gasUsed,
-          status: transactionReceipt.status ? "Success" : "Failed",
-          timestamp: readableDate
-        };
-  
-        // Update state with the new transaction data for revoked access
-        setTransactions((prevTransactions) => [...prevTransactions, newTransaction]);
-      }
-    } catch (error) {
-      console.error("Error fetching historical events:", error);
-    }
-  };
-  
-
-  const listenForDocuments = async () => {
-    try {
-      // Initialize web3 with the Ethereum provider
-      const provider = new Web3(window.ethereum);
-      const contract = new provider.eth.Contract(
-        ABI.DOCUMENT_STORAGE, 
-        CONTRACT_ADDRESSES.DOCUMENT_STORAGE
-      );
-  
-      // Listen to the DocumentUploaded event
-      contract.events.DocumentUploaded({ fromBlock: 'latest' })
-        .on('data', async (event) => {
-          try {
-            console.log("Received event doc:", event);
-  
-            // Extract event data
-            const { doctorAddress, patientAddress, fileLinks, timestamp } = event.returnValues;
-            const transactionHash = event.transactionHash;
-  
-            console.log("Transaction Hash doc:", transactionHash);
-  
-            // Fetch transaction and receipt details
-            const transactionDetails = await provider.eth.getTransaction(transactionHash);
-            const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
-  
-            // Convert timestamp (if needed)
-            const timestampInMilliseconds = Number(timestamp) * 1000;
-            const readableDate = new Date(timestampInMilliseconds);
-  
-            // Log human-readable date
-            console.log("Readable Date doc:", readableDate.toLocaleString());
-  
-            // Format the new transaction object
-            const newTransaction = {
-              type: "Document Uploaded", 
-              doctorAddress,
-              patientAddress,
-              fileLinks,
-              transactionHash,
-              value: transactionDetails.value, // Amount transferred (if any)
-              gasUsed: transactionReceipt.gasUsed, // Gas used
-              status: transactionReceipt.status ? "Success" : "Failed", // Transaction status
-              timestamp: readableDate.toLocaleString()  // Convert to readable format
-            };
-  
-            console.log("New Transaction:", newTransaction);
-  
-            // Update transaction state
-            setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
-          } catch (error) {
-            console.error("Error processing the event data:", error);
-          }
-        });
-  
-    } catch (error) {
-      console.error("Failed to initialize event listener:", error);
-    }
-  };
-
-  const fetchDocEvent = async () => {
-    try {
-      console.log("Fetching historical DocumentUploaded events...");
-  
-      const provider = new Web3(window.ethereum);
-      const contract = new provider.eth.Contract(
-        ABI.MEDICAL_RECORDS_MANAGER,
-        CONTRACT_ADDRESSES.MEDICAL_RECORDS_MANAGER
-      );
-  
-      // Fetch all "DocumentUploaded" events from the contract
-      const events = await contract.getPastEvents("DocumentUploaded", {
-        fromBlock: 0,  // Fetch from the first block (adjust if necessary)
-        toBlock: "latest"  // Up to the latest block
-      });
-  
-      console.log("Fetched events:", events);
-  
-      // Loop through events and process them
-      for (let event of events) {
-        try {
-          console.log("Processing event:", event);
-  
-          const { doctorAddress, patientAddress, fileLinks, timestamp } = event.returnValues;
-          const transactionHash = event.transactionHash;
-  
-          console.log("Transaction Hash:", transactionHash);
-  
-          // Fetch block details for timestamp
-          const blockDetails = await provider.eth.getBlock(event.blockNumber);
-          const blockTimestamp = blockDetails.timestamp; // in seconds
-  
-          // Convert the timestamp to a human-readable format
-          const timestampInMilliseconds = Number(blockTimestamp) * 1000;
-          const readableDate = new Date(timestampInMilliseconds);
-  
-          // Fetch additional transaction details
-          const transactionDetails = await provider.eth.getTransaction(transactionHash);
-          const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
-  
-          // Create a new transaction object
-          const newTransaction = {
-            type: "Document Uploaded",
-            doctorAddress,
-            patientAddress,
-            fileLinks,
-            transactionHash,
-            value: transactionDetails.value, // Amount transferred (if any)
-            gasUsed: transactionReceipt.gasUsed, // Gas used
-            status: transactionReceipt.status ? "Success" : "Failed", // Status
-            timestamp: readableDate.toLocaleString() // Readable timestamp
-          };
-  
-          console.log("Processed Transaction:", newTransaction);
-  
-          // Update the transactions state
-          setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
-        } catch (error) {
-          console.error("Error processing individual event:", error);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching historical events:", error);
-    }
-  };
-  
-  
-  
-  
-  
-  
-
-  // Call the function when the component mounts
-  useEffect(() => {
-    listenForTransactionEvents(); // Start listening for events
-    listenForTransactionAccess();
-    fetchHistoricalEvents();
-    fetchHistoricalAccess();
-    listenForDocuments();
-    fetchDocEvent();
-  }, []);
-
-  return (
-    <Container maxWidth="xl"> {/* Increased container width */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={3}> {/* Reduced sidebar width */}
-          <Sidebar />
-        </Grid>
-        <Grid item xs={12} md={9}> {/* Increased main content width */}
-          <Typography 
-            variant="h5" 
-            gutterBottom
-            sx={{
-              fontWeight: 'bold', 
-              color: 'primary.main', 
-              textAlign: 'center', 
-              padding: '10px',
-            }}
-          >
-            Transaction History
-          </Typography>  
-          {/* Transactions Table */}
-          <Box mt={2} justifyContent="center">
-            <TableContainer 
-              component={Card} 
-              sx={{ 
-                width: '100%', 
-                maxHeight: '900px', // Added max height
-                overflow: 'auto',
-                border: '1px solid rgba(224, 224, 224, 1)',    // Added scrolling if content exceeds height
-              }}
-            >
-              <Table 
-                sx={{ 
-                  minWidth: 800,  // Ensure minimum width
-                  width: '100%'   // Full width of container
-                }} 
-                aria-label="transaction table"
-              >
-                <TableHead 
-                  sx={{ 
-                    position: 'sticky', 
-                    top: 0, 
-                    backgroundColor: 'background.default', 
-                    zIndex: 1 
-                  }}
-                >
-                  <TableRow>
-                    <TableCell>Transaction Type</TableCell>
-                    <TableCell>Details</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Date</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {transactions.map((transaction, index) => (
-                    <TableRow key={index} hover>
-                      <TableCell>{transaction.type}</TableCell>
-                      <TableCell>
-                        {transaction.type === "Profile Updated" 
-                          ? `${transaction.name} profile updated` 
-                          : transaction.type === "Access Granted"
-                            ? `${transaction.patient} granted access to ${transaction.doctor}`
-                            : transaction.type === "Access Revoked"
-                              ? `${transaction.patient} revoked access from ${transaction.doctor}`
-                              : transaction.type === "Document Uploaded" 
-                                ? `Uploaded document by ${transaction.doctorAddress} for ${transaction.patientAddress}}`
-                                : ""}
-                      </TableCell>
-                      <TableCell>{transaction.status}</TableCell>
-                      <TableCell>{transaction.timestamp.toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        </Grid>
-      </Grid>
-    </Container>
-  );
-}  
