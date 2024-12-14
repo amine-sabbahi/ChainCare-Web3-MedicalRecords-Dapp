@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, LogOut, ChevronLeft, ChevronRight, Users, Stethoscope, LayoutDashboard ,FileText} from 'lucide-react';
+import { Home, LogOut, ChevronLeft, ChevronRight, Users,Shield , Stethoscope, LayoutDashboard ,FileText} from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image/';
@@ -19,11 +19,10 @@ const SideBarAdmin = ({children}) => {
   // Navigation items with icons and labels
   const navigationItems = [
     {icon: <LayoutDashboard className="w-5 h-5"/>, label: 'Admin Dashboard', href: '/admin'},
+    {icon: <Shield className="w-5 h-5"/>, label: 'Admins', href: '/admin/createAdmin'},
     {icon: <Users className="w-5 h-5"/>, label: 'Patients', href: '/admin/createPatient'},
     {icon: <Stethoscope className="w-5 h-5"/>, label: 'Doctors', href: '/admin/createDoctor'},
-    {icon: <Users className="w-5 h-5"/>, label: 'Admins', href: '/admin/createAdmin'},
     {icon: <FileText className="w-5 h-5"/>, label: 'Historique', href: '/admin/historique_Admin'},
-
   ];
 
   return (
@@ -32,13 +31,14 @@ const SideBarAdmin = ({children}) => {
       <div
         className={`
           fixed left-0 top-0 h-full 
-          bg-gradient-to-b from-[#2c3e50] to-[#34495e] 
-          text-white shadow-2xl 
+          bg-gradient-to-b from-[#B3D0E1] to-[#D9E9F3] 
+          text-black 
+          shadow-lg 
           transition-all duration-300 
           ${isCollapsed ? 'w-16' : 'w-64'}
           flex flex-col 
           z-50 
-          border-r border-gray-700
+          border-r border-gray-300
         `}
       >
         {/* Collapse/Expand Button */}
@@ -46,12 +46,12 @@ const SideBarAdmin = ({children}) => {
           onClick={toggleSidebar}
           className="
             absolute top-4 right-[-20px] 
-            bg-[#34495e] 
-            text-white 
+            bg-[#D0E3F3] 
+            text-black 
             p-2 
             rounded-r-full 
             shadow-lg 
-            hover:bg-[#2c3e50] 
+            hover:bg-[#B4D5E9] 
             transition-colors 
             group
           "
@@ -64,7 +64,7 @@ const SideBarAdmin = ({children}) => {
         </button>
 
         {/* Logo Area */}
-        <div className="p-4 border-b border-gray-700 flex items-center justify-center bg-white">
+        <div className="p-4 border-b border-gray-300 flex items-center justify-center ">
           <div 
             className={`
               transition-all 
@@ -99,8 +99,8 @@ const SideBarAdmin = ({children}) => {
                     ease-in-out 
                     ${
                       isActive([item.href])
-                        ? 'bg-[#3498db] text-white scale-105'
-                        : 'hover:bg-[#34495e] text-gray-300 hover:scale-105'
+                        ? 'bg-[#4a90e2] text-white scale-105'
+                        : 'hover:bg-[#e1f0f8] text-gray-800 hover:scale-105'
                     }
                     transform 
                     hover:shadow-lg 
@@ -110,7 +110,7 @@ const SideBarAdmin = ({children}) => {
                   `}
                 >
                   <span className={`
-                    ${isActive([item.href]) ? 'text-white' : 'text-gray-400'}
+                    ${isActive([item.href]) ? 'text-white' : 'text-gray-600'}
                     group-hover:text-white
                     transition-colors
                   `}>
@@ -135,14 +135,14 @@ const SideBarAdmin = ({children}) => {
         </nav>
 
         {/* Bottom Navigation */}
-        <div className="border-t border-gray-700 p-2">
+        <div className="border-t border-gray-300 p-2">
           <button
             onClick={logout}
             className="
               flex items-center 
               px-4 py-3 
-              hover:bg-red-600 
-              text-gray-300 
+              hover:bg-red-500 
+              text-gray-800 
               transition-all 
               duration-300 
               w-full 
