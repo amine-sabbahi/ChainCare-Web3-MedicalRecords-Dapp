@@ -56,45 +56,73 @@ export default function HistoryPage() {
           },
           // Patient Registry Events
           {
-              contract: contracts.patientRegistry,
-              events: [
-                  { 
-                      name: 'PatientRegistered', 
-                      type: 'Add Patient', 
-                      transform: (log) => {
-                          console.log('Full Patient Registered Log:', log);
-                          console.log('Log returnValues:', log.returnValues[1]);
-                          console.log('Log event name:', log.event);
-                          console.log('Patient Registered Log:', log.returnValues);
-                          return `Patient Registered: ${log.returnValues[0].name || 'Unknown'}, Age: ${log.returnValues[1].age || 'N/A'}`;
-                      }
-                  },
-                  { 
-                      name: 'PatientProfileUpdated', 
-                      type: 'Update Patient', 
-                      transform: (log) => `Patient Profile Updated: ${log.returnValues.name || 'Unknown'}` 
-                  }
-              ]
-          },
+            contract: contracts.patientRegistry,
+            events: [
+                { 
+                    name: 'PatientRegistered', 
+                    type: 'Add Patient', 
+                    transform: (log) => {
+                        return `Patient Registered: ${log.returnValues.name || 'Unknown'}, Age: ${log.returnValues.age || 'N/A'}`;
+                    }
+                },
+                { 
+                    name: 'PatientProfileUpdated', 
+                    type: 'Update Patient', 
+                    transform: (log) => `Patient Profile Updated: ${log.returnValues.name || 'Unknown'}` 
+                },
+                { 
+                    name: 'PatientDeleted', 
+                    type: 'Delete Patient', 
+                    transform: (log) => `Patient Deleted: ${log.returnValues.name || 'Unknown'}` 
+                }
+            ]
+        },
+        // Doctor Registry Events (Updated with Delete event)
+        {
+            contract: contracts.doctorRegistry,
+            events: [
+                { 
+                    name: 'DoctorRegistered', 
+                    type: 'Add Doctor', 
+                    transform: (log) => {
+                        return `Doctor Registered: ${log.returnValues.name || 'Unknown'}, Specialization: ${log.returnValues.specialization || 'N/A'}`;
+                    }
+                },
+                { 
+                    name: 'DoctorProfileUpdated', 
+                    type: 'Update Doctor', 
+                    transform: (log) => `Doctor Profile Updated: ${log.returnValues.name || 'Unknown'}` 
+                },
+                { 
+                    name: 'DoctorDeleted', 
+                    type: 'Delete Doctor', 
+                    transform: (log) => `Doctor Deleted: ${log.returnValues.name || 'Unknown'}` 
+                }
+            ]
+        },
           // Doctor Registry Events
           {
-              contract: contracts.doctorRegistry,
-              events: [
-                  { 
-                      name: 'DoctorRegistered', 
-                      type: 'Add Doctor', 
-                      transform: (log) => {
-                          console.log('Doctor Registered Log:', log.returnValues);
-                          return `Doctor Registered: ${log.returnValues.name || 'Unknown'}, Specialization: ${log.returnValues.specialization || 'N/A'}`;
-                      }
-                  },
-                  { 
-                      name: 'DoctorProfileUpdated', 
-                      type: 'Update Doctor', 
-                      transform: (log) => `Doctor Profile Updated: ${log.returnValues.name || 'Unknown'}` 
-                  }
-              ]
-          },
+            contract: contracts.doctorRegistry,
+            events: [
+                { 
+                    name: 'DoctorRegistered', 
+                    type: 'Add Doctor', 
+                    transform: (log) => {
+                        return `Doctor Registered: ${log.returnValues.name || 'Unknown'}, Specialization: ${log.returnValues.specialization || 'N/A'}`;
+                    }
+                },
+                { 
+                    name: 'DoctorProfileUpdated', 
+                    type: 'Update Doctor', 
+                    transform: (log) => `Doctor Profile Updated: ${log.returnValues.name || 'Unknown'}` 
+                },
+                { 
+                    name: 'DoctorDeleted', 
+                    type: 'Delete Doctor', 
+                    transform: (log) => `Doctor Deleted: ${log.returnValues.name || 'Unknown'}` 
+                }
+            ]
+        },
           // Medical Records Manager Events
           {
               contract: contracts.medicalRecordsManager,

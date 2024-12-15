@@ -1,7 +1,7 @@
 export const CONTRACT_ADDRESSES = {
     MEDICAL_RECORDS_MANAGER: "0xd12D4Fad6A49D25624d3da46189E4105F3566Ee4",
-    PATIENT_REGISTRY: "0xA840c53BbAb161Aa5572D31e8E409b59bf0033dc",
-    DOCTOR_REGISTRY: "0x998aDdf2f2cf3f621a8CfdFd914dA5cf6DD789a0",
+    PATIENT_REGISTRY: "0xbF0Cb753aC3F413A0c7f6C383C2c2Dd1CB08c0c0",
+    DOCTOR_REGISTRY: "0x35603cEEe68932bDF83c62e5368EA96ab5C39722",
     AUDIT_TRAIL: "0x11881158Eb1613e3a216f0AbEDe2bD2EEe63721F",
     MEDICAL_ACCESS_CONTROL: "0xA2c30c0a3F110830b9Df16a17ea48faD5EB36808",
 	DOCUMENT_STORAGE: "0xB95240e7C5ab2F0406A308976b9057F64A86bA70"
@@ -838,70 +838,6 @@ export const ABI = {
 	],
 	PATIENT_REGISTRY:[
 		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_newAdmin",
-					"type": "address"
-				},
-				{
-					"internalType": "string",
-					"name": "_fullName",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_email",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_phoneNumber",
-					"type": "string"
-				}
-			],
-			"name": "addAdmin",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_patientAddress",
-					"type": "address"
-				},
-				{
-					"internalType": "string",
-					"name": "_allergy",
-					"type": "string"
-				}
-			],
-			"name": "addAllergy",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_patientAddress",
-					"type": "address"
-				},
-				{
-					"internalType": "string",
-					"name": "_condition",
-					"type": "string"
-				}
-			],
-			"name": "addMedicalCondition",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
 			"anonymous": false,
 			"inputs": [
 				{
@@ -979,6 +915,31 @@ export const ABI = {
 					"internalType": "string",
 					"name": "name",
 					"type": "string"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "deletionTimestamp",
+					"type": "uint256"
+				}
+			],
+			"name": "PatientDeleted",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "patientAddress",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "string",
+					"name": "name",
+					"type": "string"
 				}
 			],
 			"name": "PatientProfileUpdated",
@@ -1032,58 +993,7 @@ export const ABI = {
 			"inputs": [
 				{
 					"internalType": "address",
-					"name": "_patientAddress",
-					"type": "address"
-				},
-				{
-					"internalType": "string",
-					"name": "_name",
-					"type": "string"
-				},
-				{
-					"internalType": "uint256",
-					"name": "_age",
-					"type": "uint256"
-				},
-				{
-					"internalType": "string",
-					"name": "_gender",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_email",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_phoneNumber",
-					"type": "string"
-				}
-			],
-			"name": "registerPatient",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_admin",
-					"type": "address"
-				}
-			],
-			"name": "removeAdmin",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_adminAddress",
+					"name": "_newAdmin",
 					"type": "address"
 				},
 				{
@@ -1102,7 +1012,7 @@ export const ABI = {
 					"type": "string"
 				}
 			],
-			"name": "updateAdminDetails",
+			"name": "addAdmin",
 			"outputs": [],
 			"stateMutability": "nonpayable",
 			"type": "function"
@@ -1116,26 +1026,29 @@ export const ABI = {
 				},
 				{
 					"internalType": "string",
-					"name": "_name",
-					"type": "string"
-				},
-				{
-					"internalType": "uint256",
-					"name": "_age",
-					"type": "uint256"
-				},
-				{
-					"internalType": "string",
-					"name": "_email",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_phoneNumber",
+					"name": "_allergy",
 					"type": "string"
 				}
 			],
-			"name": "updatePatientProfile",
+			"name": "addAllergy",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_patientAddress",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "_condition",
+					"type": "string"
+				}
+			],
+			"name": "addMedicalCondition",
 			"outputs": [],
 			"stateMutability": "nonpayable",
 			"type": "function"
@@ -1201,6 +1114,38 @@ export const ABI = {
 		{
 			"inputs": [
 				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "allAdmins",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_patientAddress",
+					"type": "address"
+				}
+			],
+			"name": "deletePatient",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
 					"internalType": "address",
 					"name": "_address",
 					"type": "address"
@@ -1239,6 +1184,51 @@ export const ABI = {
 					"internalType": "struct MedicalRecordsAccessControl.AdminDetails",
 					"name": "",
 					"type": "tuple"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "getAllAdminsDetails",
+			"outputs": [
+				{
+					"internalType": "address[]",
+					"name": "",
+					"type": "address[]"
+				},
+				{
+					"components": [
+						{
+							"internalType": "string",
+							"name": "fullName",
+							"type": "string"
+						},
+						{
+							"internalType": "string",
+							"name": "email",
+							"type": "string"
+						},
+						{
+							"internalType": "string",
+							"name": "phoneNumber",
+							"type": "string"
+						},
+						{
+							"internalType": "bool",
+							"name": "isActive",
+							"type": "bool"
+						},
+						{
+							"internalType": "uint256",
+							"name": "registrationTimestamp",
+							"type": "uint256"
+						}
+					],
+					"internalType": "struct MedicalRecordsAccessControl.AdminDetails[]",
+					"name": "",
+					"type": "tuple[]"
 				}
 			],
 			"stateMutability": "view",
@@ -1346,44 +1336,6 @@ export const ABI = {
 			"inputs": [
 				{
 					"internalType": "address",
-					"name": "_address",
-					"type": "address"
-				}
-			],
-			"name": "isDoctor",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_address",
-					"type": "address"
-				}
-			],
-			"name": "isPatient",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
 					"name": "",
 					"type": "address"
 				}
@@ -1446,6 +1398,44 @@ export const ABI = {
 			"inputs": [
 				{
 					"internalType": "address",
+					"name": "_patientAddress",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "_name",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "_age",
+					"type": "uint256"
+				},
+				{
+					"internalType": "string",
+					"name": "_gender",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_email",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_phoneNumber",
+					"type": "string"
+				}
+			],
+			"name": "registerPatient",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
 					"name": "",
 					"type": "address"
 				}
@@ -1498,14 +1488,25 @@ export const ABI = {
 			],
 			"stateMutability": "view",
 			"type": "function"
-		}
-	],
-	DOCTOR_REGISTRY: [
+		},
 		{
 			"inputs": [
 				{
 					"internalType": "address",
-					"name": "_newAdmin",
+					"name": "_admin",
+					"type": "address"
+				}
+			],
+			"name": "removeAdmin",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_adminAddress",
 					"type": "address"
 				},
 				{
@@ -1524,11 +1525,46 @@ export const ABI = {
 					"type": "string"
 				}
 			],
-			"name": "addAdmin",
+			"name": "updateAdminDetails",
 			"outputs": [],
 			"stateMutability": "nonpayable",
 			"type": "function"
 		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_patientAddress",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "_name",
+					"type": "string"
+				},
+				{
+					"internalType": "uint256",
+					"name": "_age",
+					"type": "uint256"
+				},
+				{
+					"internalType": "string",
+					"name": "_email",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_phoneNumber",
+					"type": "string"
+				}
+			],
+			"name": "updatePatientProfile",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		}
+	],
+	DOCTOR_REGISTRY: [
 		{
 			"anonymous": false,
 			"inputs": [
@@ -1578,6 +1614,31 @@ export const ABI = {
 				}
 			],
 			"name": "AdminRemoved",
+			"type": "event"
+		},
+		{
+			"anonymous": false,
+			"inputs": [
+				{
+					"indexed": true,
+					"internalType": "address",
+					"name": "doctorAddress",
+					"type": "address"
+				},
+				{
+					"indexed": false,
+					"internalType": "string",
+					"name": "name",
+					"type": "string"
+				},
+				{
+					"indexed": false,
+					"internalType": "uint256",
+					"name": "deletionTimestamp",
+					"type": "uint256"
+				}
+			],
+			"name": "DoctorDeleted",
 			"type": "event"
 		},
 		{
@@ -1660,58 +1721,7 @@ export const ABI = {
 			"inputs": [
 				{
 					"internalType": "address",
-					"name": "_doctorAddress",
-					"type": "address"
-				},
-				{
-					"internalType": "string",
-					"name": "_name",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_specialization",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_email",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_phoneNumber",
-					"type": "string"
-				},
-				{
-					"internalType": "string[]",
-					"name": "_qualifications",
-					"type": "string[]"
-				}
-			],
-			"name": "registerDoctor",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_admin",
-					"type": "address"
-				}
-			],
-			"name": "removeAdmin",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_adminAddress",
+					"name": "_newAdmin",
 					"type": "address"
 				},
 				{
@@ -1730,45 +1740,7 @@ export const ABI = {
 					"type": "string"
 				}
 			],
-			"name": "updateAdminDetails",
-			"outputs": [],
-			"stateMutability": "nonpayable",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_doctorAddress",
-					"type": "address"
-				},
-				{
-					"internalType": "string",
-					"name": "_name",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_specialization",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_email",
-					"type": "string"
-				},
-				{
-					"internalType": "string",
-					"name": "_phoneNumber",
-					"type": "string"
-				},
-				{
-					"internalType": "string[]",
-					"name": "_qualifications",
-					"type": "string[]"
-				}
-			],
-			"name": "updateDoctorProfile",
+			"name": "addAdmin",
 			"outputs": [],
 			"stateMutability": "nonpayable",
 			"type": "function"
@@ -1829,6 +1801,38 @@ export const ABI = {
 				}
 			],
 			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint256",
+					"name": "",
+					"type": "uint256"
+				}
+			],
+			"name": "allAdmins",
+			"outputs": [
+				{
+					"internalType": "address",
+					"name": "",
+					"type": "address"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_doctorAddress",
+					"type": "address"
+				}
+			],
+			"name": "deleteDoctor",
+			"outputs": [],
+			"stateMutability": "nonpayable",
 			"type": "function"
 		},
 		{
@@ -1923,6 +1927,51 @@ export const ABI = {
 		},
 		{
 			"inputs": [],
+			"name": "getAllAdminsDetails",
+			"outputs": [
+				{
+					"internalType": "address[]",
+					"name": "",
+					"type": "address[]"
+				},
+				{
+					"components": [
+						{
+							"internalType": "string",
+							"name": "fullName",
+							"type": "string"
+						},
+						{
+							"internalType": "string",
+							"name": "email",
+							"type": "string"
+						},
+						{
+							"internalType": "string",
+							"name": "phoneNumber",
+							"type": "string"
+						},
+						{
+							"internalType": "bool",
+							"name": "isActive",
+							"type": "bool"
+						},
+						{
+							"internalType": "uint256",
+							"name": "registrationTimestamp",
+							"type": "uint256"
+						}
+					],
+					"internalType": "struct MedicalRecordsAccessControl.AdminDetails[]",
+					"name": "",
+					"type": "tuple[]"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
 			"name": "getAllRegisteredDoctors",
 			"outputs": [
 				{
@@ -2010,44 +2059,6 @@ export const ABI = {
 			"type": "function"
 		},
 		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_address",
-					"type": "address"
-				}
-			],
-			"name": "isDoctor",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
-			"inputs": [
-				{
-					"internalType": "address",
-					"name": "_address",
-					"type": "address"
-				}
-			],
-			"name": "isPatient",
-			"outputs": [
-				{
-					"internalType": "bool",
-					"name": "",
-					"type": "bool"
-				}
-			],
-			"stateMutability": "view",
-			"type": "function"
-		},
-		{
 			"inputs": [],
 			"name": "primaryAdmin",
 			"outputs": [
@@ -2058,6 +2069,44 @@ export const ABI = {
 				}
 			],
 			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_doctorAddress",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "_name",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_specialization",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_email",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_phoneNumber",
+					"type": "string"
+				},
+				{
+					"internalType": "string[]",
+					"name": "_qualifications",
+					"type": "string[]"
+				}
+			],
+			"name": "registerDoctor",
+			"outputs": [],
+			"stateMutability": "nonpayable",
 			"type": "function"
 		},
 		{
@@ -2115,6 +2164,85 @@ export const ABI = {
 				}
 			],
 			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_admin",
+					"type": "address"
+				}
+			],
+			"name": "removeAdmin",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_adminAddress",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "_fullName",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_email",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_phoneNumber",
+					"type": "string"
+				}
+			],
+			"name": "updateAdminDetails",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_doctorAddress",
+					"type": "address"
+				},
+				{
+					"internalType": "string",
+					"name": "_name",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_specialization",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_email",
+					"type": "string"
+				},
+				{
+					"internalType": "string",
+					"name": "_phoneNumber",
+					"type": "string"
+				},
+				{
+					"internalType": "string[]",
+					"name": "_qualifications",
+					"type": "string[]"
+				}
+			],
+			"name": "updateDoctorProfile",
+			"outputs": [],
+			"stateMutability": "nonpayable",
 			"type": "function"
 		}
 	],

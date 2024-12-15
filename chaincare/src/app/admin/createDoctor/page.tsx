@@ -119,32 +119,26 @@ export default function DoctorsRegistryPage() {
   };
 
   // Delete Doctor
-  const handleDeleteDoctor = async (doctorAddress) => {
-    if (!window.ethereum) {
-      alert("Ethereum provider is not available. Please install MetaMask.");
-      return;
-    }
-    const provider = new Web3(window.ethereum);
-    const contract = new provider.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
-    try {
-      const accounts = await provider.eth.getAccounts();
-      // Note: You'll need to implement a deleteDoctor method in your contract
-      // This is a placeholder and should be replaced with the actual contract method
-      await contract.methods.updateDoctorProfile(
-        doctorAddress,
-        "", // empty name to effectively "delete"
-        "", // empty specialization
-        "", // empty email
-        "", // empty phone number
-        [] // empty qualifications
-      ).send({ from: accounts[0] });
+// Delete Doctor
+const handleDeleteDoctor = async (doctorAddress) => {
+  if (!window.ethereum) {
+    alert("Ethereum provider is not available. Please install MetaMask.");
+    return;
+  }
+  const provider = new Web3(window.ethereum);
+  const contract = new provider.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
+  try {
+    const accounts = await provider.eth.getAccounts();
+    // Use the new deleteDoctor method from the contract
+    await contract.methods.deleteDoctor(doctorAddress).send({ from: accounts[0] });
 
-      setDoctors((prev) => prev.filter((doctor) => doctor.address !== doctorAddress));
-    } catch (error) {
-      console.error("Error deleting doctor:", error);
-      alert("Failed to delete doctor. Please try again.");
-    }
-  };
+    // Remove the deleted doctor from the local state
+    setDoctors((prev) => prev.filter((doctor) => doctor.address !== doctorAddress));
+  } catch (error) {
+    console.error("Error deleting doctor:", error);
+    alert("Failed to delete doctor. Please try again.");
+  }
+};
 
   // Modify Doctor
   const handleModifyDoctor = async () => {
