@@ -141,6 +141,7 @@ contract MedicalRecordsAccessControl {
     }
 
 }
+
 // Patient Registry Contract
 contract PatientRegistry is MedicalRecordsAccessControl {
     struct Patient {
@@ -240,6 +241,34 @@ contract PatientRegistry is MedicalRecordsAccessControl {
     {
         return patientProfiles[_patientAddress];
     }
+        event PatientDeleted(
+        address indexed patientAddress,
+        string name,
+        uint deletionTimestamp
+    );
+
+    function deletePatient(address _patientAddress) external onlyAdmin {
+        require(patientProfiles[_patientAddress].isRegistered, "Patient not registered");
+
+        // Store the patient name for the event before deletion
+        string memory patientName = patientProfiles[_patientAddress].name;
+
+        // Remove the patient from the registeredPatientAddresses array
+        for (uint i = 0; i < registeredPatientAddresses.length; i++) {
+            if (registeredPatientAddresses[i] == _patientAddress) {
+                // Replace the address to be deleted with the last address
+                registeredPatientAddresses[i] = registeredPatientAddresses[registeredPatientAddresses.length - 1];
+                registeredPatientAddresses.pop();
+                break;
+            }
+        }
+
+        // Delete the patient profile
+        delete patientProfiles[_patientAddress];
+        registeredPatients[_patientAddress] = false;
+
+        emit PatientDeleted(_patientAddress, patientName, block.timestamp);
+    }
 
     function getAllRegisteredPatients()
         external
@@ -336,6 +365,34 @@ contract DoctorRegistry is MedicalRecordsAccessControl {
     {
         return doctorProfiles[_doctorAddress];
     }
+    event DoctorDeleted(
+        address indexed doctorAddress,
+        string name,
+        uint deletionTimestamp
+    );
+
+    function deleteDoctor(address _doctorAddress) external onlyAdmin {
+        require(doctorProfiles[_doctorAddress].isActive, "Doctor not registered");
+
+        // Store the doctor name for the event before deletion
+        string memory doctorName = doctorProfiles[_doctorAddress].name;
+
+        // Remove the doctor from the registeredDoctorAddresses array
+        for (uint i = 0; i < registeredDoctorAddresses.length; i++) {
+            if (registeredDoctorAddresses[i] == _doctorAddress) {
+                // Replace the address to be deleted with the last address
+                registeredDoctorAddresses[i] = registeredDoctorAddresses[registeredDoctorAddresses.length - 1];
+                registeredDoctorAddresses.pop();
+                break;
+            }
+        }
+
+        // Delete the doctor profile
+        delete doctorProfiles[_doctorAddress];
+        registeredDoctors[_doctorAddress] = false;
+
+        emit DoctorDeleted(_doctorAddress, doctorName, block.timestamp);
+    }
 
     function getAllRegisteredDoctors()
         external
@@ -364,7 +421,6 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
     mapping(bytes32 => MedicalRecord) public medicalRecords;
     mapping(address => bytes32[]) public patientRecords;
     mapping(address => bytes32[]) public doctorRecords;
-
 
 
     event MedicalRecordAdded(
@@ -511,6 +567,7 @@ contract MedicalRecordsManager is MedicalRecordsAccessControl {
             count++;
         }
     }
+
 
     // Resize the array to return only valid patients
     assembly {
