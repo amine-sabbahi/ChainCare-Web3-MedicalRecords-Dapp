@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
 import { Album } from 'lucide-react';
 import Web3 from "web3";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
@@ -21,7 +20,6 @@ const initializeWeb3 = () => {
 };
 
 export default function DoctorDashboard() {
-  const { logout } = useAuth();
   const [patientsWithAccessProfil, setPatientsWithAccessProfil] = useState<PatientAccessProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [doctorAddress, setDoctorAddress] = useState('');

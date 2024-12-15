@@ -5,8 +5,8 @@ import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 import SideBarAdmin from "@/components/SideBarAdmin";
 
 export default function HistoryPage() {
-    const [web3, setWeb3] = useState(null);
-    const [accounts, setAccounts] = useState([]);
+    const [, setWeb3] = useState(null);
+    const [, setAccounts] = useState([]);
     const [transactions, setTransactions] = useState([]);
 
     useEffect(() => {
@@ -20,6 +20,7 @@ export default function HistoryPage() {
                     const accs = await web3Instance.eth.getAccounts();
                     setAccounts(accs);
                     await fetchComprehensiveTransactionHistory(web3Instance);
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 } catch (error) {
                     console.error("User denied account access")
                 }

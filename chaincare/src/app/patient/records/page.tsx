@@ -62,7 +62,7 @@ export default function MedicalRecords() {
           </div>
         ) : records.length > 0 ? (
           <div>
-            {records.map((record: any, index: number) => (
+            {records.map((record: never, index: number) => (
               <Card
                 key={index}
                 sx={{

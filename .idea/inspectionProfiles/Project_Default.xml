@@ -1,38 +1,6 @@
 <component name="InspectionProjectProfileManager">
   <profile version="1.0">
     <option name="myName" value="Project Default" />
-<<<<<<< HEAD
-    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="ignoredPackages">
-        <value>
-          <list size="7">
-            <item index="0" class="java.lang.String" itemvalue="langchain" />
-            <item index="1" class="java.lang.String" itemvalue="PyMuPDF" />
-            <item index="2" class="java.lang.String" itemvalue="transformers" />
-            <item index="3" class="java.lang.String" itemvalue="sentence-transformers" />
-            <item index="4" class="java.lang.String" itemvalue="torch" />
-            <item index="5" class="java.lang.String" itemvalue="langchain_community" />
-            <item index="6" class="java.lang.String" itemvalue="open-clip-torch" />
-          </list>
-        </value>
-      </option>
-    </inspection_tool>
-    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
-      <option name="ignoredErrors">
-        <list>
-          <option value="N813" />
-        </list>
-      </option>
-    </inspection_tool>
-    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="ignoredIdentifiers">
-        <list>
-          <option value="chromadb.utils.embedding_functions.*" />
-        </list>
-      </option>
-    </inspection_tool>
-=======
     <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true" />
->>>>>>> 7efe719da81d302822f87e4d21b96ccf01f34447
   </profile>
 </component>

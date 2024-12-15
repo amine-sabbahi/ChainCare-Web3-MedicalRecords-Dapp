@@ -1,20 +1,17 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Web3 from "web3";
-import { useAuth } from "@/context/AuthContext";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 import SideBarAdmin from "@/components/SideBarAdmin";
 
 export default function PatientRegistryPage() {
-  const router = useRouter();
-  const { user, logout } = useAuth();
   
   // State to store patients' data and modal visibility
   const [patients, setPatients] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModifying, setIsModifying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [newPatient, setNewPatient] = useState({
     patientAddress: '',
     name: '',
@@ -24,10 +21,36 @@ export default function PatientRegistryPage() {
     phoneNumber: ''
   });
 
+  // Render loading state
+  const renderLoadingState = () => (
+    <tr>
+      <td colSpan={8} className="text-center py-4">
+        <div className="flex justify-center items-center">
+          <svg
+            className="w-6 h-6 animate-spin text-blue-500"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25"></circle>
+            <path className="opacity-75" fill="none" d="M4 12a8 8 0 1 1 16 0A8 8 0 1 1 4 12z"></path>
+          </svg>
+          <span className="ml-2">Loading...</span>
+        </div>
+      </td>
+    </tr>
+  );
+
   // Fetch the list of patients
   const fetchPatients = async () => {
+    setIsLoading(true);
     if (!window.ethereum) {
       alert("Ethereum provider is not available. Please install MetaMask.");
+      setIsLoading(false);
       return;
     }
     const provider = new Web3(window.ethereum);
@@ -44,6 +67,9 @@ export default function PatientRegistryPage() {
       setPatients(patientsData);
     } catch (error) {
       console.error("Error fetching patients:", error);
+      alert(`Failed to fetch patients: ${error.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -83,13 +109,13 @@ export default function PatientRegistryPage() {
         newPatient.email,
         newPatient.phoneNumber
       ).send({ from: accounts[0] });
-      
+
       // Close modal after adding patient
       setIsModalOpen(false);
-      
+
       // Re-fetch patients list
       await fetchPatients();
-      
+
       // Reset form
       setNewPatient({
         patientAddress: '',
@@ -111,10 +137,10 @@ export default function PatientRegistryPage() {
       alert("Ethereum provider is not available. Please install MetaMask.");
       return;
     }
-    
+
     const provider = new Web3(window.ethereum);
     const contract = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
-    
+
     try {
       const accounts = await provider.eth.getAccounts();
       await contract.methods.updatePatientProfile(
@@ -124,13 +150,13 @@ export default function PatientRegistryPage() {
         newPatient.email,
         newPatient.phoneNumber
       ).send({ from: accounts[0] });
-      
+
       // Close modal after updating patient
       setIsModalOpen(false);
-      
+
       // Re-fetch patients list
       await fetchPatients();
-      
+
       // Reset form
       setNewPatient({
         patientAddress: '',
@@ -140,7 +166,7 @@ export default function PatientRegistryPage() {
         email: '',
         phoneNumber: ''
       });
-      
+
       setIsModifying(false);
     } catch (error) {
       console.error("Error modifying patient:", error);
@@ -154,17 +180,17 @@ export default function PatientRegistryPage() {
       alert("Ethereum provider is not available. Please install MetaMask.");
       return;
     }
-    
+
     const provider = new Web3(window.ethereum);
     const contract = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
-    
+
     try {
       const accounts = await provider.eth.getAccounts();
       await contract.methods.deletePatient(patientAddress).send({ from: accounts[0] });
-      
+
       // Re-fetch patients list
       await fetchPatients();
-      
+
       alert("Patient deleted successfully.");
     } catch (error) {
       console.error("Error deleting patient:", error);
@@ -222,41 +248,51 @@ export default function PatientRegistryPage() {
             </tr>
           </thead>
           <tbody>
-            {patients.map((patient, index) => (
-              <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <td className="px-6 py-4">
-                  {`${patient.address.slice(0, 4)}...${patient.address.slice(-4)}`}
-                </td>
-                <td className="px-6 py-4">{patient.name}</td>
-                <td className="px-6 py-4">{patient.age}</td>
-                <td className="px-6 py-4">{patient.gender}</td>
-                <td className="px-6 py-4">{patient.email}</td>
-                <td className="px-6 py-4">{patient.phoneNumber}</td>
-                <td className="px-6 py-4">
-                  <button
-                    onClick={() => openModifyModal(patient)}
-                    className="px-4 py-2 bg-yellow-500 text-white rounded-lg mr-2 hover:bg-yellow-600"
-                  >
-                    Modify
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (window.confirm(`Are you sure you want to delete patient ${patient.name}?`)) {
-                        handleDeletePatient(patient.address);
-                      }
-                    }}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
+            {isLoading ? (
+              renderLoadingState()
+            ) : patients.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="text-center py-4 text-gray-500">
+                  No patients found
                 </td>
               </tr>
-            ))}
+            ) : (
+              patients.map((patient, index) => (
+                <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                  <td className="px-6 py-4">
+                    {`${patient.address.slice(0, 4)}...${patient.address.slice(-4)}`}
+                  </td>
+                  <td className="px-6 py-4">{patient.name}</td>
+                  <td className="px-6 py-4">{patient.age}</td>
+                  <td className="px-6 py-4">{patient.gender}</td>
+                  <td className="px-6 py-4">{patient.email}</td>
+                  <td className="px-6 py-4">{patient.phoneNumber}</td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => openModifyModal(patient)}
+                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg mr-2 hover:bg-yellow-600"
+                    >
+                      Modify
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (window.confirm(`Are you sure you want to delete patient ${patient.name}?`)) {
+                          handleDeletePatient(patient.address);
+                        }
+                      }}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Modal for Adding/Modifying Patient */}
+      {/* Modal for Adding/Modifying Patient remains the same */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50">
           <div className="bg-white p-8 rounded-lg shadow-lg w-96">

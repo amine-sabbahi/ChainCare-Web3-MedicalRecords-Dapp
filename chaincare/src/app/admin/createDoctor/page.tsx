@@ -1,20 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Web3 from "web3";
-import { useAuth } from "@/context/AuthContext";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 import SideBarAdmin from "@/components/SideBarAdmin";
 
 export default function DoctorsRegistryPage() {
-  const router = useRouter();
-  const { user, logout } = useAuth();
-
   // State to store doctors' data and modal visibility
   const [doctors, setDoctors] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModifying, setIsModifying] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // New loading state
   const [newDoctor, setNewDoctor] = useState({
     doctorAddress: "",
     name: "",
@@ -24,11 +20,37 @@ export default function DoctorsRegistryPage() {
     qualifications: "",
   });
 
+  // Render loading state
+  const renderLoadingState = () => (
+    <tr>
+      <td colSpan={8} className="text-center py-4">
+        <div className="flex justify-center items-center">
+          <svg
+            className="w-6 h-6 animate-spin text-blue-500"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25"></circle>
+            <path className="opacity-75" fill="none" d="M4 12a8 8 0 1 1 16 0A8 8 0 1 1 4 12z"></path>
+          </svg>
+          <span className="ml-2">Loading...</span>
+        </div>
+      </td>
+    </tr>
+  );
+
   // Fetch the list of doctors
   useEffect(() => {
     const fetchDoctors = async () => {
+      setIsLoading(true); // Set loading to true before fetching
       if (!window.ethereum) {
         alert("Ethereum provider is not available. Please install MetaMask.");
+        setIsLoading(false);
         return;
       }
       const provider = new Web3(window.ethereum);
@@ -48,6 +70,8 @@ export default function DoctorsRegistryPage() {
         setDoctors(doctorsData);
       } catch (error) {
         console.error("Error fetching doctors:", error);
+      } finally {
+        setIsLoading(false); // Set loading to false after fetching
       }
     };
     fetchDoctors();
@@ -241,7 +265,14 @@ const handleDeleteDoctor = async (doctorAddress) => {
             </tr>
           </thead>
           <tbody>
-            {doctors.map((doctor, index) => (
+            {isLoading ? (
+              renderLoadingState()
+            ) : doctors.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="text-center py-4">No doctors found.</td>
+              </tr>
+            ) : (
+            doctors.map((doctor, index) => (
               <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <td className="px-6 py-4">{`${doctor.address.slice(0, 4)}...${doctor.address.slice(-4)}`}</td>
                 <td className="px-6 py-4">{doctor.name}</td>
@@ -266,7 +297,7 @@ const handleDeleteDoctor = async (doctorAddress) => {
                   </div>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

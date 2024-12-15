@@ -1,21 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAuth } from "@/context/AuthContext";
-import { useRouter } from 'next/navigation';
 import Web3 from "web3";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 import SideBarAdmin from "@/components/SideBarAdmin";
 
 export default function Admins() {
-  const router = useRouter();
-  const { user, login, logout, loading } = useAuth();
 
   // State to store admins' data, modal visibility, and delete confirmation
   const [admins, setAdmins] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedAdmin, setSelectedAdmin] = useState(null);
+  const [, setSelectedAdmin] = useState(null);
   const [newAdmin, setNewAdmin] = useState({
     address: '',
     fullName: '',
@@ -24,23 +20,50 @@ export default function Admins() {
   });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [adminToDelete, setAdminToDelete] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Render loading state
+  const renderLoadingState = () => (
+    <tr>
+      <td colSpan={8} className="text-center py-4">
+        <div className="flex justify-center items-center">
+          <svg
+            className="w-6 h-6 animate-spin text-blue-500"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25"></circle>
+            <path className="opacity-75" fill="none" d="M4 12a8 8 0 1 1 16 0A8 8 0 1 1 4 12z"></path>
+          </svg>
+          <span className="ml-2">Loading...</span>
+        </div>
+      </td>
+    </tr>
+  );
 
   // Fetch the list of admins
   useEffect(() => {
     const fetchAdmins = async () => {
+      setIsLoading(true);
       if (!window.ethereum) {
         alert("Ethereum provider is not available. Please install MetaMask.");
+        setIsLoading(false);
         return;
       }
-  
+
       const provider = new Web3(window.ethereum);
       const contract = new provider.eth.Contract(ABI.MEDICAL_ACCESS_CONTROL, CONTRACT_ADDRESSES.MEDICAL_ACCESS_CONTROL);
-  
+
       try {
         const rawResult = await contract.methods.getAllAdminsDetails().call();
-  
+
         let adminAddresses, adminDetails;
-  
+
         if (Array.isArray(rawResult)) {
           [adminAddresses, adminDetails] = rawResult;
         } else if (typeof rawResult === 'object') {
@@ -49,20 +72,22 @@ export default function Admins() {
         } else {
           throw new Error('Unexpected return type from getAllAdminsDetails');
         }
-  
+
         const processedAdmins = adminAddresses.map((address, index) => ({
-          address: address || '', 
+          address: address || '',
           fullName: adminDetails[index]?.fullName || '',
           email: adminDetails[index]?.email || '',
           phoneNumber: adminDetails[index]?.phoneNumber || '',
           isActive: adminDetails[index]?.isActive || false,
           registrationTimestamp: adminDetails[index]?.registrationTimestamp || 0
         }));
-  
+
         setAdmins(processedAdmins);
       } catch (error) {
         console.error("Detailed error fetching admins:", error);
         alert(`Failed to fetch admins: ${error.message}`);
+      } finally {
+        setIsLoading(false);
       }
     };
   
@@ -111,7 +136,7 @@ export default function Admins() {
 
       // Re-fetch admins list
       const rawResult = await contract.methods.getAllAdminsDetails().call();
-      
+
       let adminAddresses, adminDetails;
 
       if (Array.isArray(rawResult)) {
@@ -225,17 +250,17 @@ export default function Admins() {
     return new Date(Number(timestamp) * 1000).toLocaleString();
   };
 
-  return (
+ return (
     <SideBarAdmin>
       <h1 className="text-3xl font-bold text-left text-black my-6">Admins Registry</h1>
 
       {/* Add Admin Button */}
-      <button 
+      <button
         onClick={() => {
           setIsEditMode(false);
           setNewAdmin({ address: '', fullName: '', email: '', phoneNumber: '' });
           setIsModalOpen(true);
-        }} 
+        }}
         className="mb-6 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all duration-300"
       >
         Add Admin
@@ -255,34 +280,44 @@ export default function Admins() {
           </tr>
         </thead>
         <tbody>
-        {admins.map((admin, index) => (
-          <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td className="px-6 py-4">{`${admin.address.slice(0, 4)}...${admin.address.slice(-4)}`}</td>
-            <td className="px-6 py-4">{admin.fullName}</td>
-            <td className="px-6 py-4">{admin.email}</td>
-            <td className="px-6 py-4">{admin.phoneNumber}</td>
-            <td className="px-6 py-4">{formatDate(admin.registrationTimestamp)}</td>
-            <td className="px-6 py-4">
-              <div className="flex space-x-2">
-              <button 
-                onClick={() => handleModifyAdmin(admin)}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
-              >
-                Modify
-              </button>
-              <button 
-                onClick={() => {
-                  setAdminToDelete(admin.address);
-                  setShowDeleteModal(true);
-                }}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-              >
-                Delete
-              </button>  
-              </div>
+        {isLoading ? (
+          renderLoadingState()
+        ) : admins.length === 0 ? (
+          <tr>
+            <td colSpan={8} className="text-center py-4 text-gray-500">
+              No admins found
             </td>
           </tr>
-        ))}
+        ) : (
+          admins.map((admin, index) => (
+            <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+              <td className="px-6 py-4">{`${admin.address.slice(0, 4)}...${admin.address.slice(-4)}`}</td>
+              <td className="px-6 py-4">{admin.fullName}</td>
+              <td className="px-6 py-4">{admin.email}</td>
+              <td className="px-6 py-4">{admin.phoneNumber}</td>
+              <td className="px-6 py-4">{formatDate(admin.registrationTimestamp)}</td>
+              <td className="px-6 py-4">
+                <div className="flex space-x-2">
+                <button
+                  onClick={() => handleModifyAdmin(admin)}
+                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                >
+                  Modify
+                </button>
+                <button
+                  onClick={() => {
+                    setAdminToDelete(admin.address);
+                    setShowDeleteModal(true);
+                  }}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                >
+                  Delete
+                </button>
+                </div>
+              </td>
+            </tr>
+          ))
+        )}
         </tbody>
         </table>
       </div>

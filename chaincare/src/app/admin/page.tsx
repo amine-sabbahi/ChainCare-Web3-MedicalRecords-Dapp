@@ -4,9 +4,7 @@ import {
   Users, 
   Stethoscope, 
   ClipboardList, 
-  Activity, 
-  Calendar, 
-  FileText 
+  Activity,
 } from 'lucide-react';
 import Web3 from "web3";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
@@ -63,14 +61,13 @@ export default function AdminDashboard() {
         );
         const rawResult = await medicalRecordsContract.methods.getAllAdminsDetails().call();
 
-        let adminAddresses, adminDetails;
+        let adminAddresses;
         
         // Ensure the structure of rawResult matches the expected format
         if (Array.isArray(rawResult)) {
-          [adminAddresses, adminDetails] = rawResult;
+          [adminAddresses, ] = rawResult;
         } else if (typeof rawResult === 'object') {
           adminAddresses = rawResult[0] || [];
-          adminDetails = rawResult[1] || [];
         } else {
           throw new Error('Unexpected return type from getAllAdminsDetails');
         }

@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
-import { 
+import {
   Container, 
   Typography, 
   Paper, 
@@ -14,7 +13,6 @@ import {
   TableBody, 
   Stack, 
   CircularProgress,
-  Box,
   Link,
   Tooltip,
   Avatar
@@ -29,7 +27,6 @@ import Web3 from "web3";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 
 export default function Dashboard() {
-  const { logout } = useAuth();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

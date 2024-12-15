@@ -1,21 +1,11 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Web3 from 'web3';
-import { useAuth } from '@/context/AuthContext';
-import { Button, Container, Grid, Card, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Container, Card, Typography, Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import SideBarPatient from '@/components/sideBarPatient';
 import { ABI, CONTRACT_ADDRESSES } from '@/components/contracts';
 
-let web3;
-let contract;
-
-if (typeof window !== "undefined" && window.ethereum) {
-  web3 = new Web3(window.ethereum);
-  contract = new web3.eth.Contract(ABI.MEDICAL_RECORDS_MANAGER, CONTRACT_ADDRESSES.MEDICAL_RECORDS_MANAGER);
-}
-
 export default function Dashboard() {
-  const { logout } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -98,9 +88,9 @@ export default function Dashboard() {
         toBlock: "latest"
       });
 
-      for (let event of events) {
+      for (const event of events) {
         try {
-          const { doctorAddress, patientAddress, fileLinks, timestamp } = event.returnValues;
+          const { doctorAddress, patientAddress, fileLinks,  } = event.returnValues;
           const transactionHash = event.transactionHash;
 
           const blockDetails = await provider.eth.getBlock(event.blockNumber);

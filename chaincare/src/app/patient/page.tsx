@@ -1,11 +1,9 @@
 "use client";
 
 // src/app/patient/page.tsx
-import '../globals.css';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Button, Container, Grid, Card, Typography, Box ,} from '@mui/material';
-import { Person, Email, Phone, Wc, Cake ,ExitToApp } from '@mui/icons-material';
+import { Button, Container, Card, Typography, Box ,} from '@mui/material';
+import { Person, Email, Phone, Wc, Cake  } from '@mui/icons-material';
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 import SideBarPatient from '@/components/sideBarPatient';
 
@@ -13,7 +11,6 @@ import Web3 from 'web3';
 
 
 export default function Dashboard() {
-  const { logout } = useAuth();
   const [patientInfo, setPatientInfo] = useState({
     patientAddress: '',
     name: '',
@@ -38,7 +35,7 @@ export default function Dashboard() {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       const patientAddress = accounts[0]; // Current user address
 
-      const info: any = await contract.methods.getPatientProfile(patientAddress).call();
+      const info: never = await contract.methods.getPatientProfile(patientAddress).call();
       console.log("Fetched patient data:", info);
       
       if (info) {

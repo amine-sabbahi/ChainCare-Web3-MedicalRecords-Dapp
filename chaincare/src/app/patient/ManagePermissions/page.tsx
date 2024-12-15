@@ -1,10 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Button, Container, Grid, Card, Typography, Box, List, ListItem, ListItemText, Switch } from '@mui/material';
-import { Person, ExitToApp, History, MedicalServices, Security } from '@mui/icons-material';
+import { Container, Grid, Card, Typography, Box, Switch } from '@mui/material';
 import SideBarPatient from '@/components/sideBarPatient';
-
 import Web3 from "web3";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
 
@@ -17,9 +14,8 @@ if (typeof window !== "undefined" && window.ethereum) {
 }
 
 export default function Dashboard() {
-  const { logout } = useAuth();
   const [permissionStatus, setPermissionStatus] = useState({});
-  const [transactions, setTransactions] = useState([]);
+  const [, setTransactions] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
 
