@@ -23,7 +23,7 @@ import {
   Download as DownloadIcon, 
   Person as PersonIcon 
 } from '@mui/icons-material';
-import Sidebar from "@/components/sideBarPatient";
+import SideBarPatient from "@/components/sideBarPatient";
 
 import Web3 from "web3";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
@@ -106,27 +106,26 @@ export default function Dashboard() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'row', minHeight: '100vh', bgcolor: '#f4f6f8' }}>
-      <Sidebar />
+    <SideBarPatient>
       <Container maxWidth="lg" sx={{ flexGrow: 1, p: 3 }}>
         <Paper elevation={3} sx={{ p: 3, mt: 3, borderRadius: 2 }}>
-          <Typography 
-            variant="h4" 
-            gutterBottom 
-            sx={{ 
-              mb: 3, 
-              color: '#2c3e50', 
-              fontWeight: 600 
+          <Typography
+            variant="h4"
+            gutterBottom
+            sx={{
+              mb: 3,
+              color: '#2c3e50',
+              fontWeight: 600
             }}
           >
             Patient Documents
           </Typography>
 
           {loading ? (
-            <Stack 
-              direction="row" 
-              justifyContent="center" 
-              alignItems="center" 
+            <Stack
+              direction="row"
+              justifyContent="center"
+              alignItems="center"
               height="200px"
             >
               <CircularProgress color="primary" />
@@ -134,12 +133,12 @@ export default function Dashboard() {
           ) : error ? (
             <Typography color="error">{error}</Typography>
           ) : documents.length > 0 ? (
-            <TableContainer 
-              component={Paper} 
-              variant="outlined" 
-              sx={{ 
-                boxShadow: 'none', 
-                border: '1px solid rgba(0,0,0,0.12)' 
+            <TableContainer
+              component={Paper}
+              variant="outlined"
+              sx={{
+                boxShadow: 'none',
+                border: '1px solid rgba(0,0,0,0.12)'
               }}
             >
               <Table>
@@ -154,13 +153,13 @@ export default function Dashboard() {
                 </TableHead>
                 <TableBody>
                   {documents.map((doc, index) => (
-                    <TableRow 
-                      key={index} 
-                      hover 
-                      sx={{ 
-                        '&:nth-of-type(even)': { 
-                          backgroundColor: '#f9fafb' 
-                        } 
+                    <TableRow
+                      key={index}
+                      hover
+                      sx={{
+                        '&:nth-of-type(even)': {
+                          backgroundColor: '#f9fafb'
+                        }
                       }}
                     >
                       <TableCell>
@@ -170,11 +169,11 @@ export default function Dashboard() {
                       </TableCell>
                       <TableCell>
                         <Stack direction="row" alignItems="center" spacing={2}>
-                          <Avatar 
-                            sx={{ 
-                              bgcolor: 'primary.light', 
-                              width: 40, 
-                              height: 40 
+                          <Avatar
+                            sx={{
+                              bgcolor: 'primary.light',
+                              width: 40,
+                              height: 40
                             }}
                           >
                             <PersonIcon />
@@ -207,8 +206,8 @@ export default function Dashboard() {
                                 href={link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                sx={{ 
-                                  display: 'flex', 
+                                sx={{
+                                  display: 'flex',
                                   alignItems: 'center',
                                   color: 'primary.main',
                                   mb: 1
@@ -241,6 +240,6 @@ export default function Dashboard() {
           )}
         </Paper>
       </Container>
-    </Box>
+    </SideBarPatient>
   );
 }

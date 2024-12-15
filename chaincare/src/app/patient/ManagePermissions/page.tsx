@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button, Container, Grid, Card, Typography, Box, List, ListItem, ListItemText, Switch } from '@mui/material';
 import { Person, ExitToApp, History, MedicalServices, Security } from '@mui/icons-material';
-import Sidebar from '@/components/sideBarPatient';
+import SideBarPatient from '@/components/sideBarPatient';
 
 import Web3 from "web3";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
@@ -164,16 +164,10 @@ export default function Dashboard() {
 
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: '"Poppins", sans-serif', backgroundColor: '#f4f7fa' }}>
-      {/* Sidebar */}
-      <Grid item xs={12} md={3} sx={{ display: { xs: 'none', md: 'block' } }}>
-        <Sidebar />
-      </Grid>
-      
-      {/* Main Content */}
-      <main style={{ flex: 1, padding: '40px', backgroundColor: '#FAFAFA' }}>
+    <SideBarPatient>
+      <main style={{flex: 1, padding: '40px'}}>
         {/* Dashboard Content */}
-        <Container sx={{ mt: 6 }}>
+        <Container sx={{mt: 6}}>
           <Typography
             variant="h5"
             sx={{
@@ -188,7 +182,7 @@ export default function Dashboard() {
           >
             Doctors List & Permissions
           </Typography>
-          
+
           <Card
             sx={{
               padding: '50px',
@@ -204,18 +198,18 @@ export default function Dashboard() {
               },
             }}
           >
-            <Typography variant="h6" sx={{ mb: 2, color: '#333', fontWeight: '600' }}>
+            <Typography variant="h6" sx={{mb: 2, color: '#333', fontWeight: '600'}}>
               Manage Doctor Permissions
             </Typography>
-  
+
             {loading ? (
-              <Typography variant="body1" sx={{ color: '#888', fontSize: '1rem', textAlign: 'center' }}>
+              <Typography variant="body1" sx={{color: '#888', fontSize: '1rem', textAlign: 'center'}}>
                 Loading doctor data...
               </Typography>
             ) : (
               <Grid container spacing={4}>
-                {doctors.map((doctor) => (
-                  <Grid item xs={12} sm={6} md={4} key={doctor.id}> {/* Add unique key */}
+                {doctors.map((doctor, idx) => (
+                  <Grid item xs={12} sm={6} md={4} key={idx}> {/* Add unique key */}
                     <Card
                       sx={{
                         padding: '20px',
@@ -229,16 +223,16 @@ export default function Dashboard() {
                         },
                       }}
                     >
-                      <Typography variant="h6" sx={{ color: '#333', fontWeight: '500', fontSize: '1.1rem' }}>
+                      <Typography variant="h6" sx={{color: '#333', fontWeight: '500', fontSize: '1.1rem'}}>
                         {doctor.name}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: '#666', fontWeight: '400', fontSize: '0.95rem' }}>
+                      <Typography variant="body2" sx={{color: '#666', fontWeight: '400', fontSize: '0.95rem'}}>
                         {doctor.specialization}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: '#666', fontWeight: '400', fontSize: '0.95rem' }}>
+                      <Typography variant="body2" sx={{color: '#666', fontWeight: '400', fontSize: '0.95rem'}}>
                         {doctor.phoneNumber}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: '#666', fontWeight: '400', fontSize: '0.95rem' }}>
+                      <Typography variant="body2" sx={{color: '#666', fontWeight: '400', fontSize: '0.95rem'}}>
                         {doctor.email}
                       </Typography>
                       <Box
@@ -249,13 +243,13 @@ export default function Dashboard() {
                           marginTop: '15px',
                         }}
                       >
-                        <Typography variant="body2" sx={{ color: '#888', fontSize: '0.85rem' }}>
+                        <Typography variant="body2" sx={{color: '#888', fontSize: '0.85rem'}}>
                           Permission
                         </Typography>
                         <Switch
                           checked={permissionStatus[doctor.address] || false}
                           onChange={() => handleTogglePermission(doctor.address)}
-                          inputProps={{ 'aria-label': 'controlled' }}
+                          inputProps={{'aria-label': 'controlled'}}
                           sx={{
                             '& .MuiSwitch-switchBase.Mui-checked': {
                               color: '#3F51B5',
@@ -274,6 +268,6 @@ export default function Dashboard() {
           </Card>
         </Container>
       </main>
-    </div>
+    </SideBarPatient>
   );
 }  

@@ -407,7 +407,7 @@ contract DoctorRegistry is MedicalRecordsAccessControl {
         return registeredDoctorAddresses;
     }
 
-    / Function to check if an address is a doctor
+    // Function to check if an address is a doctor
     function isDoctor(address _address) external view returns (bool) {
         return registeredDoctors[_address];
     }

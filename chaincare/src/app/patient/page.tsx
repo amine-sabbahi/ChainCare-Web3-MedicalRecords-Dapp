@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button, Container, Grid, Card, Typography, Box ,} from '@mui/material';
 import { Person, Email, Phone, Wc, Cake ,ExitToApp } from '@mui/icons-material';
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
-import Sidebar from '@/components/sideBarPatient';
+import SideBarPatient from '@/components/sideBarPatient';
 
 import Web3 from 'web3';
 
@@ -105,141 +105,124 @@ export default function Dashboard() {
   
 
   return (
-    <Box
-      className="bg-gradient-to-r from-pastel-100 to-pastel-200 min-h-screen"
-      sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '20px',
-      }}
-    >
-      <Grid container sx={{ justifyContent: 'center', alignItems: 'center', width: '100%' }}>
-        <Grid item xs={12} md={3}>
-          <Sidebar />
-        </Grid>
-        <Grid item xs={12} md={9}>
-          <Container maxWidth="lg" sx={{ mt: 6 }}>
-            <section>
-              {loading ? (
-                <Typography variant="h6" align="center" sx={{ color: '#333' }}>
-                  Loading patient data...
-                </Typography>
-              ) : (
-                <Card
-                sx={{
-                  p: 14, // Increased padding for a larger card
-                  borderRadius: '20px', // Slightly rounded border for elegance
-                  boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)', // Deeper shadow for better contrast
-                  backgroundColor: '#ffffff', // Light background
-                  width: '110%',
-                  maxWidth: '5000px', // Increased max-width for a bigger card
-                  border: '2px solid #333', // Stronger border with dark color
-                  fontFamily: '"Roboto", "Arial", sans-serif', // Classy and modern font family
-                }}
+    <SideBarPatient>
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        {loading ? (
+          <Typography variant="h6" align="center" sx={{color: '#333'}}>
+            Loading patient data...
+          </Typography>
+        ) : (
+          <Card
+            sx={{
+              p: 14, // Increased padding for a larger card
+              borderRadius: '20px', // Slightly rounded border for elegance
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.1)', // Deeper shadow for better contrast
+              backgroundColor: '#ffffff', // Light background
+              width: '110%',
+              maxWidth: '5000px', // Increased max-width for a bigger card
+              border: '2px solid #333', // Stronger border with dark color
+              fontFamily: '"Roboto", "Arial", sans-serif', // Classy and modern font family
+            }}
+          >
+            <Typography variant="h5" align="center" sx={{fontWeight: '700', color: '#333', mb: 3}}>
+              Patient Information
+            </Typography>
+            {!isEditing ? (
+              <>
+                <Box sx={{display: 'flex', flexDirection: 'column', gap: 3}}>
+                  {[{label: 'Name', value: patientInfo.name, icon: <Person sx={{color: '#86c5d8'}}/>},
+                    {label: 'Age', value: patientInfo.age, icon: <Cake sx={{color: '#fad6a5'}}/>},
+                    {label: 'Gender', value: patientInfo.gender, icon: <Wc sx={{color: '#f5b6c4'}}/>},
+                    {label: 'Email', value: patientInfo.email, icon: <Email sx={{color: '#a8d5e2'}}/>},
+                    {label: 'Phone', value: patientInfo.phoneNumber, icon: <Phone sx={{color: '#e6f3ec'}}/>}]
+                    .map(({label, value, icon}, index) => (
+                      <Box key={index} sx={{display: 'flex', alignItems: 'center', gap: 2}}>
+                        {icon}
+                        <Typography variant="body1" sx={{color: '#333', fontWeight: '500'}}>
+                          <strong>{label}:</strong> {value}
+                        </Typography>
+                      </Box>
+                    ))}
+                </Box>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    mt: 3,
+                    alignSelf: 'flex-start',
+                    color: '#333',
+                    borderColor: '#333',
+                    '&:hover': {
+                      backgroundColor: '#333',
+                      borderColor: '#333',
+                      color: '#ffffff',
+                    },
+                  }}
+                  onClick={() => setIsEditing(true)}
                 >
-                  <Typography variant="h5" align="center" sx={{ fontWeight: '700', color: '#333', mb: 3 }}>
-                    Patient Information
-                  </Typography>
-                  {!isEditing ? (
-                    <>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        {[{ label: 'Name', value: patientInfo.name, icon: <Person sx={{ color: '#86c5d8' }} /> },
-                          { label: 'Age', value: patientInfo.age, icon: <Cake sx={{ color: '#fad6a5' }} /> },
-                          { label: 'Gender', value: patientInfo.gender, icon: <Wc sx={{ color: '#f5b6c4' }} /> },
-                          { label: 'Email', value: patientInfo.email, icon: <Email sx={{ color: '#a8d5e2' }} /> },
-                          { label: 'Phone', value: patientInfo.phoneNumber, icon: <Phone sx={{ color: '#e6f3ec' }} /> }]
-                          .map(({ label, value, icon }, index) => (
-                            <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                              {icon}
-                              <Typography variant="body1" sx={{ color: '#333', fontWeight: '500' }}>
-                                <strong>{label}:</strong> {value}
-                              </Typography>
-                            </Box>
-                          ))}
-                      </Box>
-                      <Button
-                        variant="outlined"
-                        sx={{
-                          mt: 3,
-                          alignSelf: 'flex-start',
-                          color: '#333',
-                          borderColor: '#333',
-                          '&:hover': {
-                            backgroundColor: '#333',
-                            borderColor: '#333',
-                            color: '#ffffff',
-                          },
+                  Edit
+                </Button>
+              </>
+            ) : (
+              <Box
+                component="form"
+                sx={{display: 'flex', flexDirection: 'column', gap: 3}}
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  try {
+                    await updatePatientInfo();
+                    setIsEditing(false);
+                  } catch (error) {
+                    console.error('Error updating patient info:', error);
+                  }
+                }}
+              >
+                <Typography variant="h6" align="center" sx={{mb: 3, fontWeight: '700', color: '#333'}}>
+                  Edit Patient Information
+                </Typography>
+                {[{label: 'Name', value: patientInfo.name, icon: <Person sx={{color: '#86c5d8'}}/>},
+                  {label: 'Age', value: patientInfo.age, icon: <Cake sx={{color: '#fad6a5'}}/>},
+                  {label: 'Gender', value: patientInfo.gender, icon: <Wc sx={{color: '#f5b6c4'}}/>},
+                  {label: 'Email', value: patientInfo.email, icon: <Email sx={{color: '#a8d5e2'}}/>},
+                  {label: 'Phone', value: patientInfo.phoneNumber, icon: <Phone sx={{color: '#e6f3ec'}}/>}]
+                  .map(({label, value, icon}, index) => (
+                    <Box key={index} sx={{display: 'flex', alignItems: 'center', gap: 1}}>
+                      {icon}
+                      <input
+                        type={label === 'Age' ? 'number' : 'text'}
+                        placeholder={label}
+                        value={value}
+                        onChange={(e) => setPatientInfo({...patientInfo, [label.toLowerCase()]: e.target.value})}
+                        style={{
+                          flex: 1,
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #ccc',
+                          backgroundColor: '#f9f9f9',
+                          fontFamily: '"Roboto", "Arial", sans-serif',
                         }}
-                        onClick={() => setIsEditing(true)}
-                      >
-                        Edit
-                      </Button>
-                    </>
-                  ) : (
-                    <Box
-                      component="form"
-                      sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}
-                      onSubmit={async (e) => {
-                        e.preventDefault();
-                        try {
-                          await updatePatientInfo();
-                          setIsEditing(false);
-                        } catch (error) {
-                          console.error('Error updating patient info:', error);
-                        }
-                      }}
-                    >
-                      <Typography variant="h6" align="center" sx={{ mb: 3, fontWeight: '700', color: '#333' }}>
-                        Edit Patient Information
-                      </Typography>
-                      {[{ label: 'Name', value: patientInfo.name, icon: <Person sx={{ color: '#86c5d8' }} /> },
-                        { label: 'Age', value: patientInfo.age, icon: <Cake sx={{ color: '#fad6a5' }} /> },
-                        { label: 'Gender', value: patientInfo.gender, icon: <Wc sx={{ color: '#f5b6c4' }} /> },
-                        { label: 'Email', value: patientInfo.email, icon: <Email sx={{ color: '#a8d5e2' }} /> },
-                        { label: 'Phone', value: patientInfo.phoneNumber, icon: <Phone sx={{ color: '#e6f3ec' }} /> }]
-                        .map(({ label, value, icon }, index) => (
-                          <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            {icon}
-                            <input
-                              type={label === 'Age' ? 'number' : 'text'}
-                              placeholder={label}
-                              value={value}
-                              onChange={(e) => setPatientInfo({ ...patientInfo, [label.toLowerCase()]: e.target.value })}
-                              style={{
-                                flex: 1,
-                                padding: '12px',
-                                borderRadius: '8px',
-                                border: '1px solid #ccc',
-                                backgroundColor: '#f9f9f9',
-                                fontFamily: '"Roboto", "Arial", sans-serif',
-                              }}
-                            />
-                          </Box>
-                        ))}
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-                        <Button variant="outlined" onClick={() => setIsEditing(false)}>
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          variant="contained"
-                          sx={{
-                            backgroundColor: '#a8d5e2',
-                            ':hover': { backgroundColor: '#86c5d8' },
-                          }}
-                        >
-                          Save
-                        </Button>
-                      </Box>
+                      />
                     </Box>
-                  )}
-                </Card>
-              )}
-            </section>
-          </Container>
-        </Grid>
-      </Grid>
-    </Box>
+                  ))}
+                <Box sx={{display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2}}>
+                  <Button variant="outlined" onClick={() => setIsEditing(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                      backgroundColor: '#a8d5e2',
+                      ':hover': {backgroundColor: '#86c5d8'},
+                    }}
+                  >
+                    Save
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </Card>
+        )}
+      </Container>
+    </SideBarPatient>
   );
 }

@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import ChaincareLogo from "../../public/img/Chaincare_verticale-logo.png";
 
-const SideBarPatient = ({ }) => {
+const SideBarPatient = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [removedItems, setRemovedItems] = useState([]);
   const pathname = usePathname();
@@ -66,13 +66,13 @@ const SideBarPatient = ({ }) => {
               <div key={index} className="relative group">
                 <a
                   href={item.href}
-                  className={`flex items-center px-5 py-5 transition-all duration-300 ease-in-out transform hover:shadow-lg rounded-xl mx-3 group
+                  className={`flex items-center justify-center px-5 py-3 transition-all duration-300 ease-in-out transform hover:shadow-lg rounded-xl mx-3 group
                     ${isActive([item.href])
                       ? 'bg-[#4a90e2] text-white scale-105'
                       : 'hover:bg-[#e1f0f8] text-gray-800 hover:scale-105'}`}
                 >
                   <span
-                    className={`group-hover:text-white ${isActive([item.href]) ? 'text-white' : 'text-gray-600'}`}
+                    className={`items-center group-hover:text-white ml-4 ${isActive([item.href]) ? 'text-white' : 'text-gray-600'}`}
                   >
                     {item.icon}
                   </span>
@@ -101,6 +101,25 @@ const SideBarPatient = ({ }) => {
           </button>
         </div>
       </div>
+
+      {/* Main Content */}
+      <div
+        className={`
+          flex-auto 
+          w-screen 
+          h-screen 
+          left-0 
+          top-0 
+          p-8 
+          bg-gray-100 
+          transition-all 
+          duration-300 
+          ${isCollapsed ? 'ml-16' : 'ml-64'}
+        `}
+      >
+        {children}
+      </div>
+
     </div>
   );
 };
