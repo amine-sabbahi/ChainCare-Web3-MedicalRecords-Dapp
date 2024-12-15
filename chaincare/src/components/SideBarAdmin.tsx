@@ -22,7 +22,7 @@ const SideBarAdmin = ({children}) => {
     {icon: <Shield className="w-5 h-5"/>, label: 'Admins', href: '/admin/createAdmin'},
     {icon: <Users className="w-5 h-5"/>, label: 'Patients', href: '/admin/createPatient'},
     {icon: <Stethoscope className="w-5 h-5"/>, label: 'Doctors', href: '/admin/createDoctor'},
-    {icon: <FileText className="w-5 h-5"/>, label: 'Historique', href: '/admin/historique_Admin'},
+    {icon: <FileText className="w-5 h-5"/>, label: 'Transaction History', href: '/admin/Transaction_history'},
   ];
 
   return (
