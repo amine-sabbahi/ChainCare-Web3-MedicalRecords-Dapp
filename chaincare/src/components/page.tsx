@@ -1,7 +1,5 @@
 "use client";
-import Layout from "@/components/Layout";
-import { useAuth } from "@/context/AuthContext";
-import CenteredLoader from "@/components/Loading";
+
 import { Container } from "@/components/Container";
 import { Hero } from "@/components/Hero";
 import { SectionTitle } from "@/components/SectionTitle";

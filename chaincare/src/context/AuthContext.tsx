@@ -92,8 +92,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (accounts.length > 0) {
         const connectedAccount = accounts[0];
         const provider = new Web3(window.ethereum);
-        const network = await provider.eth.net.getId();
-
 
         const contract_Doctor_Registery = new provider.eth.Contract(ABI.DOCTOR_REGISTRY, CONTRACT_ADDRESSES.DOCTOR_REGISTRY);
         const contract_Patient_Registery = new provider.eth.Contract(ABI.PATIENT_REGISTRY, CONTRACT_ADDRESSES.PATIENT_REGISTRY);
@@ -177,13 +175,13 @@ function generateJWT(address: string, role: string): string {
   return `${header}.${payload}.${signature}`;
 }
 
-function parseJwt(token: string): any {
+function parseJwt(token: string): never {
   try {
     const [, payloadBase64] = token.split('.');
     const payload = JSON.parse(atob(payloadBase64));
     return payload;
   } catch (error) {
-    throw new Error('Invalid token');
+    throw new Error(error);
   }
 }
 

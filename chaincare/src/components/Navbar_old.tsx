@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {useAuth} from "@/context/AuthContext";
 
 const Navbar: React.FC = () => {
-  const { user, login, logout, loading } = useAuth();
+  const { logout } = useAuth();
   const handleDisconnect = () => {
     logout();
   };

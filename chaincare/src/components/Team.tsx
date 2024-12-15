@@ -33,6 +33,7 @@ const teamMembers = [
 
 const TeamMemberCard = ({ member }) => (
   <div className="bg-white shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300 ease-in-out p-6 rounded-lg">
+    {/* eslint-disable-next-line @next/next/no-img-element */}
     <img
       className="w-24 h-24 rounded-full mx-auto"
       src={member.image}

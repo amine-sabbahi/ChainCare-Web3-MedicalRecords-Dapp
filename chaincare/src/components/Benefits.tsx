@@ -8,7 +8,7 @@ interface BenefitsProps {
     imgPos?: "left" | "right";
     title: string;
     desc: string;
-    image: any;
+    image: never;
     bullets: {
       title: string;
       desc: string;
@@ -65,7 +65,7 @@ export const Benefits = (props: Readonly<BenefitsProps>) => {
   );
 };
 
-function Benefit(props: any) {
+function Benefit(props: never) {
   return (
       <div className="flex items-start mt-8 space-x-3">
         <div className="flex items-center justify-center flex-shrink-0 mt-1 bg-indigo-500 rounded-md w-11 h-11 ">

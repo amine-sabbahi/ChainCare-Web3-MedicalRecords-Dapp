@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, LogOut, ChevronLeft, ChevronRight, Users,Shield , Stethoscope, LayoutDashboard ,FileText} from 'lucide-react';
+import { LogOut, ChevronLeft, ChevronRight, Users,Shield , Stethoscope, LayoutDashboard ,FileText} from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image/';
@@ -7,7 +7,7 @@ import ChaincareLogo from "../../public/img/Chaincare_verticale-logo.png"
 
 const SideBarAdmin = ({children}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [removedItems, setRemovedItems] = useState([]);
+  const [removedItems, ] = useState([]);
   const pathname = usePathname();
   const { logout } = useAuth();
 

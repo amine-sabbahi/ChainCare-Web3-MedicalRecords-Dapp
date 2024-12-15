@@ -7,7 +7,7 @@ import ChaincareLogo from "../../public/img/Chaincare_verticale-logo.png"
 
 const SideBarAdmin = ({children}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [removedItems, setRemovedItems] = useState([]);
+  const [removedItems, ] = useState([]);
   const pathname = usePathname();
   const { logout } = useAuth();
 
