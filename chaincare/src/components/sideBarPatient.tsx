@@ -21,7 +21,7 @@ const SideBarPatient = ({ children }) => {
     { icon: <Users className="w-7 h-7" />, label: 'Profil', href: '/patient' },
     { icon: <LayoutDashboard className="w-7 h-7" />, label: 'Consult Medical Records', href: '/patient/Records_patient' },
     { icon: <Users className="w-7 h-7" />, label: 'Manage Permissions', href: '/patient/ManagePermissions' },
-    { icon: <Stethoscope className="w-7 h-7" />, label: 'Historique', href: '/patient/historique' },
+    { icon: <Stethoscope className="w-7 h-7" />, label: 'Transaction history', href: '/patient/Transaction_history' },
   ];
 
   return (
