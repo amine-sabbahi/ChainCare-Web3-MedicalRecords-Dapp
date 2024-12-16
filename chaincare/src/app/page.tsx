@@ -12,7 +12,6 @@ import { TeamSection } from "@/components/Team"
 
 import { benefitOne, benefitTwo } from "@/components/data";
 import { Footer } from "@/components/Footer";
-
 export default function Home() {
   return (
     <Container>
@@ -20,38 +19,34 @@ export default function Home() {
       <Hero />
       <SectionTitle
         preTitle="ChainCare Benefits"
-        title=" Why should you use this Dapp"
+        title="Why Use ChainCare for Medical Records?"
       >
-        Nextly is a free landing page & marketing website template for startups
-        and indie projects. Its built with Next.js & TailwindCSS. And its
-        completely open-source.
+        ChainCare is a decentralized application (DApp) built on blockchain technology to securely store, manage, and share medical records. With enhanced security, privacy, and accessibility, ChainCare transforms how medical data is handled.
       </SectionTitle>
 
       <Benefits data={benefitOne} />
       <Benefits imgPos="right" data={benefitTwo} />
 
       <SectionTitle
-        preTitle="Watch a video"
-        title="Learn how to fullfil your needs"
+        preTitle="How It Works"
+        title="Discover How ChainCare Simplifies Medical Record Management"
       >
-        This section is to highlight a promo or demo video of your product.
-        Analysts says a landing page with video has 3% more conversion rate. So,
-        don&apos;t forget to add one. Just like this.
+        Watch our demo video to understand how ChainCare securely manages your health records, allows seamless access, and empowers patients and doctors with blockchain-powered transparency.
       </SectionTitle>
+
+      {/* Add a Video Component Here */}
 
       <SectionTitle
         preTitle="Testimonials"
-        title="Here's what our customers said"
+        title="What Our Users Are Saying"
       >
-        Testimonials is a great way to increase the brand trust and awareness.
-        Use this section to highlight your popular customers.
+        Our users trust ChainCare for secure, efficient, and transparent medical record management. Here’s what they have to say about their experience.
       </SectionTitle>
 
       <Testimonials />
 
       <SectionTitle preTitle="FAQ" title="Frequently Asked Questions">
-        Answer your customers possible questions here, it will increase the
-        conversion rate as well as support or chat requests.
+        Have questions about how ChainCare works? Find answers to common queries here and learn how to get started with our blockchain-powered medical record manager.
       </SectionTitle>
 
       <Faq />

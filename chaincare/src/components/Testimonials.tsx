@@ -10,45 +10,44 @@ export const Testimonials = () => {
   return (
     <Container>
       <div className="grid gap-10 lg:grid-cols-2 xl:grid-cols-3">
+        {/* Testimonial 1 */}
         <div className="lg:col-span-2 xl:col-auto">
           <div className="flex flex-col justify-between w-full h-full bg-gray-100 px-14 rounded-2xl py-14 dark:bg-trueGray-800">
             <p className="text-2xl leading-normal ">
-              Share a real <Mark>testimonial</Mark>
-              that hits some of your benefits from one of your popular customer.
+              <Mark>“ChainCare revolutionized</Mark> how we manage medical records. The blockchain ensures security, and we can access patient data seamlessly when authorized.”
             </p>
-
             <Avatar
               image={userOneImg}
-              name="Sarah Steiner"
-              title="VP Sales at Google"
+              name="Dr. Emily Johnson"
+              title="Head of IT at St. Mary Hospital"
             />
           </div>
         </div>
+
+        {/* Testimonial 2 */}
         <div className="">
           <div className="flex flex-col justify-between w-full h-full bg-gray-100 px-14 rounded-2xl py-14 dark:bg-trueGray-800">
             <p className="text-2xl leading-normal ">
-              Make sure you only pick the <Mark>right sentence</Mark>
-              to keep it short and simple.
+              <Mark>“As a patient,</Mark> I now have full control over my health records. I decide who gets access and for how long. It’s incredibly empowering.”
             </p>
-
             <Avatar
               image={userTwoImg}
-              name="Dylan Ambrose"
-              title="Lead marketer at Netflix"
+              name="Michael Chen"
+              title="Patient Advocate"
             />
           </div>
         </div>
+
+        {/* Testimonial 3 */}
         <div className="">
           <div className="flex flex-col justify-between w-full h-full bg-gray-100 px-14 rounded-2xl py-14 dark:bg-trueGray-800">
             <p className="text-2xl leading-normal ">
-              This is an <Mark>awesome</Mark> landing page template I&apos;ve
-              seen. I would use this for anything.
+              <Mark>“ChainCare is a game-changer.</Mark> The transparency and privacy provided by blockchain technology allow doctors to focus on patient care without administrative burdens.”
             </p>
-
             <Avatar
               image={userThreeImg}
-              name="Gabrielle Winn"
-              title="Co-founder of Acme Inc"
+              name="Dr. Ahmed Khalid"
+              title="Oncologist at City Medical Center"
             />
           </div>
         </div>
@@ -56,6 +55,7 @@ export const Testimonials = () => {
     </Container>
   );
 };
+
 
 interface AvatarProps {
   image: never;
