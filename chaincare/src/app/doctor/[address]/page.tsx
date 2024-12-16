@@ -7,6 +7,8 @@ import ipfs from "../../../lib/ipfs";
 import { useAuth } from "@/context/AuthContext";
 import Web3 from "web3";
 import { ABI, CONTRACT_ADDRESSES } from "@/components/contracts";
+import Loading from "@/components/Loading";
+import {useRouter} from "next/navigation";
 
 interface DocumentInfo {
   fileLinks: string[];
@@ -37,6 +39,7 @@ const PatientDocumentPage = ({ params }) => {
     ABI.DOCUMENT_STORAGE,
     CONTRACT_ADDRESSES.DOCUMENT_STORAGE
   );
+  const router = useRouter();
 
   // Fetch patient address from params
   useEffect(() => {
@@ -135,6 +138,7 @@ const PatientDocumentPage = ({ params }) => {
 
       // Upload files to IPFS
       for (const file of files) {
+        console.log(file)
         const fileData = await ipfs.add(file);
         const fileLink = `http://localhost:8080/ipfs/${fileData.path}`;
         uploadedFileLinks.push(fileLink);

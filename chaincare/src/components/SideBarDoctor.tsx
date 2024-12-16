@@ -28,7 +28,7 @@ const SideBarAdmin = ({children}) => {
       <div
         className={`
           fixed left-0 top-0 h-full 
-          bg-gradient-to-b from-[#2c3e50] to-[#34495e] 
+          bg-gradient-to-b from-[#B3D0E1] to-[#D9E9F3] 
           text-white shadow-2xl 
           transition-all duration-300 
           ${isCollapsed ? 'w-16' : 'w-64'}
@@ -42,12 +42,12 @@ const SideBarAdmin = ({children}) => {
           onClick={toggleSidebar}
           className="
             absolute top-4 right-[-20px]
-            bg-[#34495e]
+            bg-[#D0E3F3]
             text-white
             p-2
             rounded-r-full
             shadow-lg
-            hover:bg-[#2c3e50]
+            hover:bg-[#B4D5E9]
             transition-colors
             group
           "
@@ -95,8 +95,8 @@ const SideBarAdmin = ({children}) => {
                     ease-in-out 
                     ${
                       isActive([item.href])
-                        ? 'bg-[#3498db] text-white scale-105'
-                        : 'hover:bg-[#34495e] text-gray-300 hover:scale-105'
+                        ? 'bg-[#4a90e2] text-white scale-105'
+                        : 'hover:bg-[#e1f0f8] text-gray-900 hover:scale-105'
                     }
                     transform 
                     hover:shadow-lg 
@@ -106,7 +106,7 @@ const SideBarAdmin = ({children}) => {
                   `}
                 >
                   <span className={`
-                    ${isActive([item.href]) ? 'text-white' : 'text-gray-400'}
+                    ${isActive([item.href]) ? 'text-white' : 'text-gray-600'}
                     group-hover:text-white
                     transition-colors
                   `}>
@@ -134,17 +134,7 @@ const SideBarAdmin = ({children}) => {
         <div className="border-t border-gray-700 p-2">
           <button
             onClick={logout}
-            className="
-              flex items-center
-              px-4 py-3
-              hover:bg-gray-600
-              text-gray-300
-              transition-all
-              duration-300
-              w-full
-              rounded-xl
-              group
-            "
+            className="flex items-center px-5 py-5 hover:bg-red-500 text-gray-800 transition-all duration-300 w-full rounded-xl group"
           >
             <LogOut className="w-5 h-5 group-hover:rotate-12 transition-transform"/>
             <span
