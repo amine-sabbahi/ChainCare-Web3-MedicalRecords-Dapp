@@ -4,7 +4,7 @@
 
 ChainCare is a decentralized application (DApp) for managing medical records using blockchain technology. This project leverages Ethereum smart contracts and decentralized storage (IPFS) to ensure security, transparency, and immutability in the management of sensitive medical data. It provides tailored interfaces for administrators, patients, and doctors to interact with the system securely and efficiently.
 
-
+![Main interface](dapp-images/main-interface.png)
 
 ## Key Features
 
@@ -13,16 +13,27 @@ ChainCare is a decentralized application (DApp) for managing medical records usi
 - View system statistics (transactions, active users, stored documents).
 - Supervise and audit blockchain transactions.
 
+![Main interface](dapp-images/admin1.png)
+
+![Main interface](dapp-images/admin2.png)
+
 ### Patient
 - Access personal medical records.
 - Upload new medical files to IPFS.
 - Grant or revoke access to doctors.
 - View transaction history (e.g., doctor file access).
 
+![Main interface](dapp-images/patient1.jpeg)
+![Main interface](dapp-images/patient2.jpeg)
+
+
 ### Doctor
 - View authorized patient data.
 - Add medical documents for patients securely.
 - Access medical records through blockchain and IPFS.
+
+![Main interface](dapp-images/doctor1.jpeg)
+![Main interface](dapp-images/doctor2.jpeg)
 
 ## Technology Stack
 
@@ -70,14 +81,19 @@ npm run dev
 2. Select your role (Administrator, Patient, or Doctor) to access the relevant dashboard.
 3. Perform actions such as uploading documents, managing user permissions, or auditing transactions based on your role.
 
-## Contributing
+## Contributors
 
-Contributions are welcome! Please fork the repository, create a feature branch, and submit a pull request for review.
 
-## License
+   - [BAKKALI AYOUB](https://github.com/BAKKALIAYOUB).
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+   - [NIDAR SALMA](https://github.com/salma31nidar).
+
+   - [SABBAHI MOHAMED AMINE](https://github.com/amine-sabbahi).
 
 ---
 
-For further details, check out the [project report](./Blockchain%20-%20Rapport%20PFM.pdf).
+**Abdelmalek Essaadi University** Faculty of Sciences and Techniques
+   - Department : Computer Engineering
+   - Master : AI & DS
+   - Module : Blockchain
+   - Framed by : Pr. Ikram Ben abdel ouahab
