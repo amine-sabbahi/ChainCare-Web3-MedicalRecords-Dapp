@@ -36,21 +36,28 @@ export const Faq = () => {
 
 const faqdata = [
   {
-    question: "Is this template completely free to use?",
-    answer: "Yes, this template is completely free to use.",
-  },
-  {
-    question: "Can I use it in a commercial project?",
-    answer: "Yes, this you can.",
-  },
-  {
-    question: "What is your refund policy? ",
+    question: "What is ChainCare, and how does it work?",
     answer:
-      "If you're unhappy with your purchase for any reason, email us within 90 days and we'll refund you in full, no questions asked.",
+      "ChainCare is a decentralized medical record management system built on blockchain technology. It securely stores and provides access to patient records while ensuring privacy and transparency.",
   },
   {
-    question: "Do you offer technical support? ",
+    question: "Who owns and controls the medical data on ChainCare?",
     answer:
-      "No, we don't offer technical support for free downloads. Please purchase a support plan to get 6 months of support.",
+      "Patients have complete ownership and control of their medical data. They can grant or revoke access to doctors, hospitals, or other authorized personnel at any time.",
+  },
+  {
+    question: "Is the data stored on ChainCare secure?",
+    answer:
+      "Yes, ChainCare uses blockchain technology, which ensures that all records are encrypted, tamper-proof, and securely stored in a decentralized network.",
+  },
+  {
+    question: "How can healthcare providers access patient records?",
+    answer:
+      "Healthcare providers can access patient records only when granted permission by the patient. Permissions can be time-bound and revoked at any time.",
+  },
+  {
+    question: "Does ChainCare comply with healthcare regulations?",
+    answer:
+      "Yes, ChainCare complies with major healthcare privacy and security regulations, including HIPAA and GDPR, ensuring legal and ethical data management.",
   },
 ];

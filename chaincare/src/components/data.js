@@ -1,60 +1,59 @@
 import {
-  FaceSmileIcon,
-  ChartBarSquareIcon,
-  CursorArrowRaysIcon,
-  DevicePhoneMobileIcon,
-  AdjustmentsHorizontalIcon,
-  SunIcon,
+  LockClosedIcon,
+  ClipboardDocumentCheckIcon,
+  UsersIcon,
+  CloudArrowDownIcon,
+  GlobeAltIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/solid";
 
 import benefitOneImg from "../../public/img/healthcare1.png";
 import benefitTwoImg from "../../public/img/hero3.png";
 
 const benefitOne = {
-  title: "Highlight your benefits",
-  desc: "You can use this space to highlight your first benefit or a feature of your product. It can also contain an image or Illustration like in the example along with some bullet points.",
+  title: "Why Choose ChainCare?",
+  desc: "ChainCare revolutionizes medical data management with blockchain technology, ensuring security, transparency, and accessibility for your health records.",
   image: benefitOneImg,
   bullets: [
     {
-      title: "Understand your customers",
-      desc: "Then explain the first point breifly in one or two lines.",
-      icon: <FaceSmileIcon />,
+      title: "Secure and Private Data",
+      desc: "Blockchain ensures end-to-end encryption and tamper-proof medical records.",
+      icon: <LockClosedIcon />,
     },
     {
-      title: "Improve acquisition",
-      desc: "Here you can add the next benefit point.",
-      icon: <ChartBarSquareIcon />,
+      title: "Seamless Access",
+      desc: "Patients and doctors can securely access medical data anytime, anywhere.",
+      icon: <ClipboardDocumentCheckIcon />,
     },
     {
-      title: "Drive customer retention",
-      desc: "This will be your last bullet point in this section.",
-      icon: <CursorArrowRaysIcon />,
+      title: "Improved Collaboration",
+      desc: "Facilitates collaboration between healthcare providers for better treatment outcomes.",
+      icon: <UsersIcon />,
     },
   ],
 };
 
 const benefitTwo = {
-  title: "Offer more benefits here",
-  desc: "You can use this same layout with a flip image to highlight your rest of the benefits of your product. It can also contain an image or Illustration as above section along with some bullet points.",
+  title: "Key Features of ChainCare",
+  desc: "Our platform offers cutting-edge features to manage and protect medical records efficiently. Built for scalability, security, and ease of use.",
   image: benefitTwoImg,
   bullets: [
     {
-      title: "Mobile Responsive Template",
-      desc: "Nextly is designed as a mobile first responsive template.",
-      icon: <DevicePhoneMobileIcon />,
+      title: "Decentralized Storage",
+      desc: "Records are securely stored on a decentralized blockchain network.",
+      icon: <CloudArrowDownIcon />,
     },
     {
-      title: "Powered by Next.js & TailwindCSS",
-      desc: "This template is powered by latest technologies and tools.",
-      icon: <AdjustmentsHorizontalIcon />,
+      title: "Global Accessibility",
+      desc: "Access medical records globally with full transparency and control.",
+      icon: <GlobeAltIcon />,
     },
     {
-      title: "Dark & Light Mode",
-      desc: "Nextly comes with a zero-config light & dark mode. ",
-      icon: <SunIcon />,
+      title: "Trusted Security",
+      desc: "Advanced blockchain protocols ensure data security and prevent breaches.",
+      icon: <ShieldCheckIcon />,
     },
   ],
 };
 
-
-export {benefitOne, benefitTwo};
+export { benefitOne, benefitTwo };
