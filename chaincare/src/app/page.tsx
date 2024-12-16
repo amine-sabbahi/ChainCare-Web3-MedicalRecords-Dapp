@@ -6,7 +6,6 @@ import { SectionTitle } from "@/components/SectionTitle";
 import { Benefits } from "@/components/Benefits";
 import { Testimonials } from "@/components/Testimonials";
 import { Faq } from "@/components/Faq";
-import { Cta } from "@/components/Cta";
 import { Navbar } from "@/components/Navbar";
 import { TeamSection } from "@/components/Team"
 
@@ -51,8 +50,6 @@ export default function Home() {
 
       <Faq />
       <TeamSection />
-      <Cta />
-      <Footer />
     </Container>
   );
 }

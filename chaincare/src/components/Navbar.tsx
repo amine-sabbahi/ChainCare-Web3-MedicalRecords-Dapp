@@ -8,15 +8,28 @@ import {useAuth} from "@/context/AuthContext";
 import Loading from "@/components/Loading";
 
 export const Navbar = () => {
-  const navigation = ["Product", "Features", "Pricing", "Company", "Blog"];
-  const { user, login, logout, loading } = useAuth(); // Wallet auth methods.
+  const navigation = [
+    { name: "Benefits", section: "benefits" },
+    { name: "Testimonials", section: "testimonials" },
+    { name: "FAQ", section: "faq" },
+    { name: "Team", section: "team" }
+  ];
+
+  const { user, login, logout, loading } = useAuth();
 
   const handleDisconnect = () => {
     logout();
   };
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="w-full">
+    <div className="w-full sticky top-0 z-50 bg-white shadow-md">
       <nav className="container relative flex flex-wrap items-center justify-between mx-auto lg:justify-between xl:px-1">
         {/* Logo */}
         <Link href="/">
@@ -26,7 +39,7 @@ export const Navbar = () => {
                 src={ChaincareLogo}
                 width="250"
                 height="110"
-                alt="N"
+                alt="ChainCare Logo"
                 className="w-auto h-auto object-contain"
                 priority
               />
@@ -39,8 +52,7 @@ export const Navbar = () => {
           <div className="hidden mr-3 lg:flex nav__item">
             {loading ? (
               <Loading/>
-              ) :
-              user.isAuthenticated ? (
+            ) : user.isAuthenticated ? (
               <button
                 onClick={handleDisconnect}
                 className="px-6 py-2 text-white bg-red-500 rounded-md"
@@ -91,13 +103,13 @@ export const Navbar = () => {
               <Disclosure.Panel className="flex flex-wrap w-full my-5 lg:hidden">
                 <>
                   {navigation.map((item, index) => (
-                    <Link
+                    <button
                       key={index}
-                      href="/"
+                      onClick={() => scrollToSection(item.section)}
                       className="w-full px-4 py-2 -ml-4 text-gray-500 rounded-md dark:text-gray-300 hover:text-indigo-500 focus:text-indigo-500 focus:bg-indigo-100 dark:focus:bg-gray-800 focus:outline-none"
                     >
-                      {item}
-                    </Link>
+                      {item.name}
+                    </button>
                   ))}
                   <div className="w-full mt-3 text-center">
                     {user.isAuthenticated ? (
@@ -129,12 +141,12 @@ export const Navbar = () => {
           <ul className="items-center justify-end flex-1 pt-6 list-none lg:pt-0 lg:flex">
             {navigation.map((menu, index) => (
               <li className="mr-3 nav__item" key={index}>
-                <Link
-                  href="/"
+                <button
+                  onClick={() => scrollToSection(menu.section)}
                   className="inline-block px-4 py-2 text-lg font-normal text-gray-800 no-underline rounded-md dark:text-gray-200 hover:text-indigo-500 focus:text-indigo-500 focus:bg-indigo-100 focus:outline-none dark:focus:bg-gray-800"
                 >
-                  {menu}
-                </Link>
+                  {menu.name}
+                </button>
               </li>
             ))}
           </ul>
