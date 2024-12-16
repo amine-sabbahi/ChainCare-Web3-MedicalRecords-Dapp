@@ -40,18 +40,30 @@ export default function Dashboard() {
         CONTRACT_ADDRESSES.DOCUMENT_STORAGE
       );
 
-      contract.events.DocumentUploaded({ fromBlock: 'latest' })
+      contract.events.DocumentUploaded({ fromBlock: 0 })
         .on('data', async (event) => {
           try {
             const { doctorAddress, patientAddress, fileLinks, timestamp } = event.returnValues;
             const transactionHash = event.transactionHash;
 
+            // Fetch transaction details
             const transactionDetails = await provider.eth.getTransaction(transactionHash);
-            const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
+            if (!transactionDetails) {
+              console.error("Transaction details not found for hash:", transactionHash);
+              return;
+            }
 
+            const transactionReceipt = await provider.eth.getTransactionReceipt(transactionHash);
+            if (!transactionReceipt) {
+              console.error("Transaction receipt not found for hash:", transactionHash);
+              return;
+            }
+
+            // Convert timestamp to human-readable date
             const timestampInMilliseconds = Number(timestamp) * 1000;
             const readableDate = new Date(timestampInMilliseconds);
 
+            // Build new transaction object
             const newTransaction = {
               type: "Document Uploaded",
               doctorAddress,
@@ -59,12 +71,19 @@ export default function Dashboard() {
               fileLinks,
               transactionHash,
               value: transactionDetails.value,
-              gasUsed: transactionReceipt.gasUsed,
-              status: transactionReceipt.status ? "Success" : "Failed",
+              gasUsed: transactionReceipt?.gasUsed || 0,
+              status: transactionReceipt?.status ? "Success" : "Failed",
               timestamp: readableDate.toLocaleString()
             };
 
-            setTransactions((prevTransactions) => [newTransaction, ...prevTransactions]);
+            // Update transactions state safely
+            setTransactions((prevTransactions) => {
+              if (!prevTransactions.some(tx => tx.transactionHash === transactionHash)) {
+                return [newTransaction, ...prevTransactions];
+              }
+              return prevTransactions;
+            });
+
           } catch (error) {
             console.error("Error processing the event data:", error);
           }
@@ -79,8 +98,8 @@ export default function Dashboard() {
     try {
       const provider = new Web3(window.ethereum);
       const contract = new provider.eth.Contract(
-        ABI.MEDICAL_RECORDS_MANAGER,
-        CONTRACT_ADDRESSES.MEDICAL_RECORDS_MANAGER
+        ABI.DOCUMENT_STORAGE,
+        CONTRACT_ADDRESSES.DOCUMENT_STORAGE
       );
 
       const events = await contract.getPastEvents("DocumentUploaded", {
